@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VAYELLE — Match It. Vibe It.</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <header id="site-header"></header>
+
+  <main class="main-content">
+    <!-- HERO SECTION -->
+    <section class="hero-section">
+      <div class="hero-inner">
+        <div class="hero-content">
+          <p class="eyebrow">match it. vibe it.</p>
+          <h1>Your style.<br>Your rules.<br>Your <span style="color:var(--accent)">VAYELLE</span>.</h1>
+          <div style="display:flex;gap:32px;margin-bottom:24px;">
+            <div><strong style="color:var(--text-heading);font-size:1.5rem;">6</strong><br><small style="color:var(--text-muted);">Silhouettes</small></div>
+            <div><strong style="color:var(--text-heading);font-size:1.5rem;">5</strong><br><small style="color:var(--text-muted);">Materials</small></div>
+            <div><strong style="color:var(--text-heading);font-size:1.5rem;">20+</strong><br><small style="color:var(--text-muted);">Colors</small></div>
+          </div>
+          <div class="hero-buttons">
+            <a href="pages/explore.html" class="btn btn-primary btn-lg">Explore Collection</a>
+            <a href="pages/studio.html" class="btn btn-outline btn-lg">Start Designing</a>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div style="position:relative;">
+            <img src="assets/images/hero.jpg" alt="VAYELLE Hero" style="border-radius:var(--radius-2xl);box-shadow:var(--shadow-lg);max-width:100%;animation:float 6s ease-in-out infinite;">
+            <div style="position:absolute;bottom:20px;right:20px;background:white;border-radius:var(--radius-lg);padding:12px 20px;box-shadow:var(--shadow-md);">
+              <div style="font-size:0.75rem;color:var(--text-muted);">Vibe Score</div>
+              <div style="font-size:1.5rem;font-weight:800;color:var(--accent);">94%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURED COLLECTION -->
+    <section class="popular-section">
+      <div class="section-header"><p class="eyebrow">Curated</p><h2>Featured Collection</h2></div>
+      <div class="product-grid-3" id="featured-grid"></div>
+    </section>
+
+    <!-- BROWSE BY CATEGORY -->
+    <section class="section-container">
+      <div class="section-header"><p class="eyebrow">Browse</p><h2>Shop by Category</h2></div>
+      <div class="product-grid-3" id="category-grid"></div>
+    </section>
+
+    <!-- HOW VAYELLE WORKS -->
+    <section class="features-section" style="background:var(--stone-100);padding-top:64px;padding-bottom:64px;">
+      <div class="section-header"><p class="eyebrow">How it works</p><h2>Four Simple Steps</h2></div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div style="font-size:2rem;margin-bottom:12px;">👟</div>
+          <div class="eyebrow" style="margin-bottom:8px;">Step 1</div>
+          <h3>Pick a Base</h3>
+          <p>Choose from our curated collection of shoe silhouettes.</p>
+        </div>
+        <div class="feature-card">
+          <div style="font-size:2rem;margin-bottom:12px;">🎨</div>
+          <div class="eyebrow" style="margin-bottom:8px;">Step 2</div>
+          <h3>Customize</h3>
+          <p>Select materials, colors, and decorative elements.</p>
+        </div>
+        <div class="feature-card">
+          <div style="font-size:2rem;margin-bottom:12px;">✨</div>
+          <div class="eyebrow" style="margin-bottom:8px;">Step 3</div>
+          <h3>Match Your Fit</h3>
+          <p>Upload an outfit and get AI-powered recommendations.</p>
+        </div>
+        <div class="feature-card">
+          <div style="font-size:2rem;margin-bottom:12px;">📦</div>
+          <div class="eyebrow" style="margin-bottom:8px;">Step 4</div>
+          <h3>Order</h3>
+          <p>Review your design and place your custom order.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- DESIGN STUDIO PROMO -->
+    <section style="background:var(--stone-900);padding:64px 24px;">
+      <div style="max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;" class="two-col-layout">
+        <div>
+          <p class="eyebrow">Design Studio</p>
+          <h2 style="color:white;font-size:2.5rem;margin-bottom:16px;">Your design studio awaits</h2>
+          <p style="color:var(--stone-400);margin-bottom:24px;">Explore colors, materials, and decorations in our interactive shoe design canvas.</p>
+          <a href="pages/studio.html" class="btn btn-accent btn-lg">Open Studio</a>
+        </div>
+        <div class="checker-bg" style="border-radius:var(--radius-2xl);padding:40px;display:flex;justify-content:center;" id="studio-promo-art"></div>
+      </div>
+    </section>
+
+    <!-- AI OUTFIT MATCH -->
+    <section class="section-container">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;" class="two-col-layout">
+        <div style="border-radius:var(--radius-2xl);overflow:hidden;">
+          <img src="assets/images/outfit.jpg" alt="Outfit Analysis" style="width:100%;display:block;">
+        </div>
+        <div>
+          <p class="eyebrow">AI-Powered</p>
+          <h2>Match Your Outfit</h2>
+          <p style="margin-bottom:16px;">Upload your outfit photo and let VAYELLE analyze colors, style, and recommend the perfect shoe design.</p>
+          <div style="display:flex;gap:8px;margin-bottom:24px;">
+            <span style="width:32px;height:32px;border-radius:50%;background:#D9C7A8;display:inline-block;border:2px solid white;box-shadow:var(--shadow-sm);"></span>
+            <span style="width:32px;height:32px;border-radius:50%;background:#3A3A3A;display:inline-block;border:2px solid white;box-shadow:var(--shadow-sm);"></span>
+            <span style="width:32px;height:32px;border-radius:50%;background:#6B6B3A;display:inline-block;border:2px solid white;box-shadow:var(--shadow-sm);"></span>
+            <span style="width:32px;height:32px;border-radius:50%;background:#F8F7F3;display:inline-block;border:2px solid white;box-shadow:var(--shadow-sm);"></span>
+          </div>
+          <a href="pages/outfit-upload.html" class="btn btn-primary">Try AI Match</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMMUNITY SHOWCASE -->
+    <section class="section-container">
+      <div class="section-header"><p class="eyebrow">Community</p><h2>From the Community</h2></div>
+      <div class="product-grid-3" id="community-grid"></div>
+      <div style="text-align:center;margin-top:32px;">
+        <a href="pages/community.html" class="btn btn-outline">View All Designs</a>
+      </div>
+    </section>
+
+    <!-- VALUE PROPS -->
+    <section class="bg-cream" style="padding:64px 24px;">
+      <div style="max-width:1280px;margin:0 auto;">
+        <div class="product-grid-3">
+          <div class="panel" style="text-align:center;"><div style="font-size:2rem;margin-bottom:12px;">🎨</div><h3>Free Customization</h3><p>Design your shoes with unlimited combinations at no extra design cost.</p></div>
+          <div class="panel" style="text-align:center;"><div style="font-size:2rem;margin-bottom:12px;">💎</div><h3>Premium Materials</h3><p>Choose from leather, suede, mesh, canvas, and synthetic options.</p></div>
+          <div class="panel" style="text-align:center;"><div style="font-size:2rem;margin-bottom:12px;">🤝</div><h3>Community Driven</h3><p>Share designs, remix creations, and get inspired by others.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA BANNER -->
+    <section style="padding:24px;">
+      <div class="cta-banner">
+        <h2>Ready to create?</h2>
+        <p style="font-size:1.125rem;">match it. vibe it.</p>
+        <a href="pages/explore.html" class="btn btn-white btn-lg" style="margin-top:8px;">Explore Collection</a>
+      </div>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/colors.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    // --- Render featured shoes (first 3) ---
+    document.getElementById('featured-grid').innerHTML = shoes.slice(0, 3).map(s => renderProductCard(s)).join('');
+
+    // --- Render category cards ---
+    const categories = [
+      { name: "Men's Collection", cat: 'men', img: 'assets/images/shoe-formal.jpg' },
+      { name: "Women's Collection", cat: 'women', img: 'assets/images/shoe-retro.jpg' },
+      { name: "Unisex Collection", cat: 'unisex', img: 'assets/images/shoe-white.jpg' }
+    ];
+    document.getElementById('category-grid').innerHTML = categories.map(c => `
+      <a href="pages/category.html?cat=${c.cat}" style="display:block;position:relative;border-radius:var(--radius-2xl);overflow:hidden;aspect-ratio:4/3;text-decoration:none;">
+        <img src="${c.img}" alt="${c.name}" style="width:100%;height:100%;object-fit:cover;transition:transform 0.5s ease;">
+        <div style="position:absolute;inset:0;background:linear-gradient(transparent 40%,rgba(0,0,0,0.6));display:flex;align-items:flex-end;padding:24px;">
+          <h3 style="color:white;font-size:1.25rem;">${c.name}</h3>
+        </div>
+      </a>
+    `).join('');
+
+    // --- Render studio promo ShoeArt ---
+    document.getElementById('studio-promo-art').innerHTML = renderShoeArt({ colors: defaultColors, width: 360 });
+
+    // --- Render community designs ---
+    document.getElementById('community-grid').innerHTML = communityDesigns.slice(0, 3).map(d => `
+      <a href="pages/community-detail.html?id=${d.id}" class="community-card" style="text-decoration:none;">
+        <div class="community-card-preview" style="padding:20px;display:flex;align-items:center;justify-content:center;">
+          ${renderShoeArt({ colors: d.colors, soleId: d.sole, materialId: d.material, decos: (d.decos||[]).map((did,i)=>({uid:'c'+i,id:did,x:50,y:40,scale:1})), width: 280 })}
+        </div>
+        <div class="community-card-body">
+          <div class="community-card-name">${d.name}</div>
+          <div class="community-card-creator">by ${d.creator}</div>
+        </div>
+        <div class="community-card-footer">
+          <div class="community-card-likes">${icons.heart} ${d.likes}</div>
+        </div>
+      </a>
+    `).join('');
+  </script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Accessible Palette — VAYELLE</title>
+  <link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/components.css"><link rel="stylesheet" href="../css/responsive.css">
+  <style>
+    .acc-swatch{width:64px;height:64px;border-radius:50%;position:relative;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;font-size:1.25rem;}
+    .acc-swatch:hover{transform:scale(1.1);}
+    .acc-swatch.sel{box-shadow:0 0 0 4px var(--accent);}
+    .acc-swatch .pattern-overlay{position:absolute;inset:0;border-radius:50%;pointer-events:none;}
+    .pat-stripes{background:repeating-linear-gradient(45deg,rgba(255,255,255,.3) 0px,rgba(255,255,255,.3) 2px,transparent 2px,transparent 6px);}
+    .pat-dots{background:radial-gradient(circle,rgba(255,255,255,.4) 1.5px,transparent 1.5px);background-size:6px 6px;}
+    .pat-grid{background:repeating-linear-gradient(0deg,rgba(255,255,255,.25) 0px,rgba(255,255,255,.25) 1px,transparent 1px,transparent 5px),repeating-linear-gradient(90deg,rgba(255,255,255,.25) 0px,rgba(255,255,255,.25) 1px,transparent 1px,transparent 5px);}
+    .pat-zigzag{background:repeating-linear-gradient(135deg,rgba(255,255,255,.3) 0px,rgba(255,255,255,.3) 2px,transparent 2px,transparent 4px);}
+    .pat-cross{background:linear-gradient(0deg,transparent 45%,rgba(255,255,255,.3) 45%,rgba(255,255,255,.3) 55%,transparent 55%),linear-gradient(90deg,transparent 45%,rgba(255,255,255,.3) 45%,rgba(255,255,255,.3) 55%,transparent 55%);}
+    .pat-waves{background:repeating-linear-gradient(45deg,rgba(255,255,255,.2) 0px,rgba(255,255,255,.2) 3px,transparent 3px,transparent 6px),repeating-linear-gradient(-45deg,rgba(255,255,255,.15) 0px,rgba(255,255,255,.15) 3px,transparent 3px,transparent 6px);}
+    .pat-rings{background:radial-gradient(circle,transparent 30%,rgba(255,255,255,.25) 30%,rgba(255,255,255,.25) 50%,transparent 50%);}
+    .hc .acc-swatch{border:3px solid white!important;}
+  </style>
+</head>
+<body>
+  <header id="site-header"></header>
+  <main class="main-content studio-theme">
+    <div class="section-container">
+      <div class="page-header" style="padding:0 0 16px;"><p class="eyebrow">Accessibility</p><h1>Color-Blind-Friendly Palette</h1><p style="color:var(--stone-400);">Okabe–Ito research palette with patterns, labels, and icons.</p></div>
+      <!-- Toggles -->
+      <div style="display:flex;gap:24px;margin-bottom:24px;flex-wrap:wrap;">
+        <label style="display:flex;align-items:center;gap:8px;color:var(--stone-300);font-size:.875rem;cursor:pointer;">
+          <span class="toggle-switch"><input type="checkbox" id="tog-patterns" checked onchange="renderSwatches()"><span class="toggle-slider"></span></span>Show Patterns
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;color:var(--stone-300);font-size:.875rem;cursor:pointer;">
+          <span class="toggle-switch"><input type="checkbox" id="tog-labels" checked onchange="renderSwatches()"><span class="toggle-slider"></span></span>Show Labels
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;color:var(--stone-300);font-size:.875rem;cursor:pointer;">
+          <span class="toggle-switch"><input type="checkbox" id="tog-hc" onchange="renderSwatches()"><span class="toggle-slider"></span></span>High Contrast
+        </label>
+      </div>
+      <div class="two-col-layout" style="padding:0;">
+        <div role="radiogroup" aria-label="Accessible color palette" id="acc-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:24px;"></div>
+        <div>
+          <div class="studio-panel" style="padding:24px;">
+            <h3 style="margin-bottom:16px;">Preview</h3>
+            <div id="acc-preview"></div>
+            <button class="btn btn-accent" style="width:100%;margin-top:16px;" id="acc-apply-btn" onclick="applyAccColor()" disabled>Apply to Upper</button>
+          </div>
+          <a href="colors.html" class="btn btn-outline" style="width:100%;margin-top:12px;">← Back to Color Explorer</a>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer id="site-footer"></footer>
+  <script src="../js/data.js"></script><script src="../js/store.js"></script><script src="../js/colors.js"></script><script src="../js/main.js"></script>
+  <script>
+    let selectedAccHex = null;
+    function renderSwatches() {
+      const showPat = document.getElementById('tog-patterns').checked;
+      const showLab = document.getElementById('tog-labels').checked;
+      const hc = document.getElementById('tog-hc').checked;
+      const grid = document.getElementById('acc-grid');
+      grid.className = hc ? 'hc' : '';
+      grid.style.cssText = 'display:grid;grid-template-columns:repeat(4,1fr);gap:24px;';
+
+      grid.innerHTML = accessiblePalette.map(c => {
+        const sel = selectedAccHex === c.hex;
+        const patClass = showPat && c.pattern !== 'solid' ? 'pat-' + c.pattern : '';
+        return `<div role="radio" aria-checked="${sel}" tabindex="0" style="text-align:center;cursor:pointer;" onclick="selectAccColor('${c.hex}')">
+          <div class="acc-swatch ${sel?'sel':''}" style="background:${c.hex};margin:0 auto 8px;border:2px solid var(--stone-600);">
+            ${showPat ? `<div class="pattern-overlay ${patClass}"></div>` : ''}
+            <span style="position:relative;z-index:1;color:${isLightColor(c.hex)?'#000':'#fff'};font-size:1rem;">${c.icon}</span>
+          </div>
+          ${showLab ? `<div style="color:var(--stone-200);font-size:.8125rem;font-weight:600;">${c.name}</div>
+          <div style="color:var(--stone-500);font-size:.6875rem;">${c.hex}</div>` : ''}
+        </div>`;
+      }).join('');
+    }
+
+    function selectAccColor(hex) {
+      selectedAccHex = hex;
+      document.getElementById('acc-apply-btn').disabled = false;
+      renderSwatches();
+      renderPreview();
+    }
+
+    function renderPreview() {
+      const d = getCurrentDesign();
+      document.getElementById('acc-preview').innerHTML = renderShoeArt({ colors: d.colors, soleId: d.soleId, materialId: d.materialId, decos: d.decos, width: 300 });
+    }
+
+    function applyAccColor() {
+      if (!selectedAccHex) return;
+      setColor('upper', selectedAccHex);
+      showToast('Applied ' + selectedAccHex + ' to upper', 'success');
+      renderPreview();
+    }
+
+    renderSwatches(); renderPreview();
+  </script>
+</body>
+</html>

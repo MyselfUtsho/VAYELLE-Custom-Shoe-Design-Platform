@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Material Recommendations — VAYELLE</title>
+  <link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/components.css"><link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main class="main-content">
+    <div class="section-container">
+      <div class="page-header" style="padding:0 0 24px;"><p class="eyebrow">Smart Advisor</p><h1>Material Recommendations</h1><p>Find the best material based on your style and budget.</p></div>
+      <!-- Filters -->
+      <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:24px;">
+        <div style="display:flex;gap:8px;" id="style-chips">
+          <button class="chip active" onclick="setStyle('All',this)">All</button>
+          <button class="chip" onclick="setStyle('formal',this)">Formal</button>
+          <button class="chip" onclick="setStyle('casual',this)">Casual</button>
+          <button class="chip" onclick="setStyle('streetwear',this)">Streetwear</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <label class="form-label" style="margin:0;white-space:nowrap;">Max Budget:</label>
+          <input type="range" class="range-slider" min="200" max="1500" value="1000" id="mat-budget" oninput="renderRecs()" style="width:160px;">
+          <span id="mat-budget-label" style="font-weight:600;min-width:60px;"></span>
+        </div>
+      </div>
+
+      <div id="rec-cards"></div>
+
+      <!-- Comparison Table -->
+      <div style="margin-top:48px;">
+        <h2 style="margin-bottom:16px;">Cost Comparison</h2>
+        <div style="overflow-x:auto;">
+          <table class="comparison-table" id="comparison-table"></table>
+        </div>
+      </div>
+
+      <div style="margin-top:32px;text-align:center;">
+        <button class="btn btn-accent btn-lg" onclick="saveCurrentDesign('Recommended Design');showToast('Design saved!','success');">Save Design</button>
+      </div>
+    </div>
+  </main>
+  <footer id="site-footer"></footer>
+  <script src="../js/data.js"></script><script src="../js/store.js"></script><script src="../js/colors.js"></script><script src="../js/main.js"></script>
+  <script>
+    let activeStyle = 'All';
+    function setStyle(s, btn) {
+      activeStyle = s;
+      document.querySelectorAll('#style-chips .chip').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      renderRecs();
+    }
+
+    function renderRecs() {
+      const budget = parseInt(document.getElementById('mat-budget').value);
+      document.getElementById('mat-budget-label').textContent = bdt(budget);
+      const shoe = getCurrentDesign().shoeId ? getShoe(getCurrentDesign().shoeId) : shoes[0];
+
+      // Score each material
+      let scored = materials.map(m => {
+        let score = 0;
+        if (activeStyle === 'All' || m.suits.includes(activeStyle)) score += 50;
+        if (m.price <= budget) score += 30;
+        score += m.durability * 4;
+        return { ...m, score, totalPrice: shoe.price + m.price };
+      });
+
+      scored.sort((a, b) => b.score - a.score);
+
+      document.getElementById('rec-cards').innerHTML = scored.map((m, i) => `
+        <div class="panel" style="display:flex;gap:20px;margin-bottom:16px;align-items:center;flex-wrap:wrap;${!m.available?'opacity:0.5;':''}">
+          <img src="${m.image}" alt="${m.name}" style="width:120px;height:90px;object-fit:cover;border-radius:var(--radius-lg);" loading="lazy">
+          <div style="flex:1;min-width:200px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <h3 style="font-size:1.125rem;">${m.name}</h3>
+              ${i === 0 ? '<span class="badge badge-accent">Best Match</span>' : ''}
+              ${!m.available ? '<span class="badge badge-danger">Unavailable</span>' : ''}
+            </div>
+            <p style="font-size:.875rem;margin-bottom:8px;">${m.description}</p>
+            <div style="margin-bottom:4px;">Durability: ${'●'.repeat(m.durability)}${'○'.repeat(5-m.durability)}</div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;">${m.suits.map(s=>`<span class="badge badge-default">${s}</span>`).join('')}</div>
+          </div>
+          <div style="text-align:right;min-width:120px;">
+            <div style="font-size:.8125rem;color:var(--text-muted);">Material cost</div>
+            <div style="font-weight:700;font-size:1.125rem;">+${bdt(m.price)}</div>
+            <div style="font-size:.75rem;color:var(--text-muted);margin-top:4px;">Est. total: ${bdt(m.totalPrice)}</div>
+            <div style="margin-top:4px;"><span class="${m.price <= budget ? 'badge badge-success' : 'badge badge-warning'}">${m.price <= budget ? 'Within budget' : 'Over budget'}</span></div>
+            ${m.available ? `<button class="btn btn-accent btn-sm" style="margin-top:8px;" onclick="selectMaterial('${m.id}');showToast('${m.name} selected!','success');">Use This</button>` : ''}
+          </div>
+        </div>
+      `).join('');
+
+      // Comparison table
+      document.getElementById('comparison-table').innerHTML = `
+        <thead><tr><th>Material</th><th>Price</th><th>Durability</th><th>Suits</th><th>Available</th><th>Est. Total</th></tr></thead>
+        <tbody>${scored.map(m => `<tr>
+          <td style="font-weight:600;">${m.name}</td><td>${bdt(m.price)}</td>
+          <td>${'●'.repeat(m.durability)}${'○'.repeat(5-m.durability)}</td>
+          <td>${m.suits.join(', ')}</td>
+          <td>${m.available?'<span style="color:#16a34a;">Yes</span>':'<span style="color:#dc2626;">No</span>'}</td>
+          <td style="font-weight:600;">${bdt(m.totalPrice)}</td>
+        </tr>`).join('')}</tbody>`;
+    }
+
+    renderRecs();
+  </script>
+</body>
+</html>

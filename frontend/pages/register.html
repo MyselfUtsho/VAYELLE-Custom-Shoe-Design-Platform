@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account — VAYELLE</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main class="main-content">
+    <div class="auth-form fade-up">
+      <div class="auth-header">
+        <a href="../index.html" class="vayelle-logo" style="font-size:2rem;">VAYELLE<span style="color:var(--accent);">●</span></a>
+        <h1 style="margin-top:12px;font-size:1.75rem;">Create Account</h1>
+        <p style="color:var(--text-muted);font-size:0.875rem;">Join VAYELLE to curate custom sneaker designs and share with the community.</p>
+      </div>
+
+      <div class="panel" style="padding:28px;">
+        <form id="reg-form" onsubmit="handleRegister(event)">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" class="form-input" id="reg-name" placeholder="e.g. Miftahul Islam" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" class="form-input" id="reg-email" placeholder="you@domain.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-input" id="reg-password" placeholder="At least 6 characters" minlength="6" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Preferred Shoe Size (EU Optional)</label>
+            <select class="form-select" id="reg-size">
+              <option value="">Select Usual Size</option>
+              <option value="38">EU 38</option>
+              <option value="39">EU 39</option>
+              <option value="40">EU 40</option>
+              <option value="41">EU 41</option>
+              <option value="42" selected>EU 42</option>
+              <option value="43">EU 43</option>
+              <option value="44">EU 44</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-accent btn-lg" style="width:100%;margin-top:8px;">Complete Registration</button>
+        </form>
+
+        <div class="auth-divider">ALREADY A MEMBER?</div>
+
+        <p style="text-align:center;font-size:0.8125rem;">
+          <a href="login.html" class="btn btn-outline" style="width:100%;">Sign In with Existing Account</a>
+        </p>
+      </div>
+    </div>
+  </main>
+  <footer id="site-footer"></footer>
+
+  <script src="../js/data.js"></script>
+  <script src="../js/store.js"></script>
+  <script src="../js/colors.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    function handleRegister(e) {
+      e.preventDefault();
+      const name = document.getElementById('reg-name').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const size = document.getElementById('reg-size').value;
+
+      setUser({ name: name, email: email });
+      if (size) setUsualSize(parseInt(size));
+
+      showToast('Account registered successfully!', 'success');
+      setTimeout(() => { window.location.href = 'profile.html'; }, 500);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Price Calculator — VAYELLE</title>
+  <link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/components.css"><link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main class="main-content">
+    <div class="section-container">
+      <div class="page-header" style="padding:0 0 24px;"><p class="eyebrow">Pricing</p><h1>Price Calculator</h1><p>See how each option affects your estimated total.</p></div>
+      <div class="two-col-layout sidebar-right" style="padding:0;">
+        <!-- Options -->
+        <div id="price-options"></div>
+        <!-- Price Summary Sidebar -->
+        <div>
+          <div class="checkout-summary" style="position:sticky;top:100px;" id="price-sidebar"></div>
+          <div style="margin-top:16px;display:flex;flex-direction:column;gap:8px;">
+            <button class="btn btn-accent" style="width:100%;" onclick="saveCurrentDesign('Price Calc Design');showToast('Design saved!','success');">Save Design</button>
+            <a href="material-recommendations.html" class="btn btn-outline" style="width:100%;">Material Recommendations →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer id="site-footer"></footer>
+  <script src="../js/data.js"></script><script src="../js/store.js"></script><script src="../js/colors.js"></script><script src="../js/main.js"></script>
+  <script>
+    function renderPriceOptions() {
+      const d = getCurrentDesign();
+      document.getElementById('price-options').innerHTML = `
+        <!-- Base Shoe -->
+        <div class="panel" style="margin-bottom:16px;">
+          <h4 style="margin-bottom:12px;">Base Shoe</h4>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            ${shoes.map(s => `<button class="chip ${d.shoeId===s.id?'active':''}" onclick="selectShoe('${s.id}');renderAll();">${s.name} — ${bdt(s.price)}</button>`).join('')}
+          </div>
+        </div>
+        <!-- Material -->
+        <div class="panel" style="margin-bottom:16px;">
+          <h4 style="margin-bottom:12px;">Material</h4>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            ${materials.filter(m=>m.available).map(m => `<button class="chip ${d.materialId===m.id?'active':''}" onclick="selectMaterial('${m.id}');renderAll();">${m.name} — +${bdt(m.price)}</button>`).join('')}
+          </div>
+        </div>
+        <!-- Sole -->
+        <div class="panel" style="margin-bottom:16px;">
+          <h4 style="margin-bottom:12px;">Sole</h4>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            ${soles.map(s => `<button class="chip ${d.soleId===s.id?'active':''}" onclick="selectSole('${s.id}');renderAll();">${s.name} — ${s.price>0?'+'+bdt(s.price):'Free'}</button>`).join('')}
+          </div>
+        </div>
+        <!-- Decorations -->
+        <div class="panel">
+          <h4 style="margin-bottom:12px;">Decorations (${d.decos.length})</h4>
+          ${d.decos.length===0?'<p style="color:var(--text-muted);">None added. <a href="decorations.html" style="color:var(--accent);">Add some →</a></p>':
+          d.decos.map(dc=>{const dec=getDecoration(dc.id);return dec?`<span class="chip" style="margin:4px;">${dec.glyph} ${dec.name} (+${bdt(dec.price)})</span>`:''}).join('')}
+        </div>`;
+    }
+
+    function renderPriceSidebar() {
+      const d = getCurrentDesign();
+      const shoe = d.shoeId ? getShoe(d.shoeId) : null;
+      const mat = d.materialId ? getMaterial(d.materialId) : null;
+      const sol = d.soleId ? getSole(d.soleId) : null;
+      const total = calculatePrice();
+      const shoeP = shoe ? shoe.price : 0;
+      const matP = mat ? mat.price : 0;
+      const solP = sol ? sol.price : 0;
+      let decoP = 0;
+      const uniqueIds = [...new Set(d.decos.map(x=>x.id))];
+      uniqueIds.forEach(id=>{const dec=getDecoration(id);if(dec)decoP+=dec.price;});
+
+      function bar(val) { return total > 0 ? Math.round((val/total)*100) : 0; }
+
+      document.getElementById('price-sidebar').innerHTML = `
+        <h3>Price Breakdown</h3>
+        ${shoe?`<div class="checkout-line"><span class="label">Base: ${shoe.name}</span><span class="value">${bdt(shoeP)}</span></div>
+        <div class="proportion-bar" style="margin-bottom:12px;"><div class="proportion-bar-fill" style="width:${bar(shoeP)}%;"></div></div>`:''}
+        ${mat?`<div class="checkout-line"><span class="label">Material: ${mat.name}</span><span class="value">+${bdt(matP)}</span></div>
+        <div class="proportion-bar" style="margin-bottom:12px;"><div class="proportion-bar-fill" style="width:${bar(matP)}%;"></div></div>`:''}
+        ${sol?`<div class="checkout-line"><span class="label">Sole: ${sol.name}</span><span class="value">${solP>0?'+'+bdt(solP):'Free'}</span></div>
+        <div class="proportion-bar" style="margin-bottom:12px;"><div class="proportion-bar-fill" style="width:${bar(solP)}%;"></div></div>`:''}
+        ${decoP>0?`<div class="checkout-line"><span class="label">Decorations</span><span class="value">+${bdt(decoP)}</span></div>
+        <div class="proportion-bar" style="margin-bottom:12px;"><div class="proportion-bar-fill" style="width:${bar(decoP)}%;"></div></div>`:''}
+        <div class="checkout-total"><span>Total</span><span>${bdt(total)}</span></div>
+        <p style="font-size:0.75rem;color:var(--stone-500);margin-top:12px;text-align:center;">Demonstration pricing only</p>`;
+    }
+
+    function renderAll() { renderPriceOptions(); renderPriceSidebar(); }
+    renderAll();
+  </script>
+</body>
+</html>

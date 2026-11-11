@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Saved Designs — VAYELLE</title>
+  <link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/components.css"><link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main class="main-content">
+    <div class="section-container">
+      <div class="page-header" style="padding:0 0 24px;"><p class="eyebrow">Your Work</p><h1>Saved Designs</h1><p id="saved-count"></p></div>
+      <div id="saved-grid"></div>
+      <div class="empty-state" id="saved-empty" style="display:none;">
+        <div style="font-size:3rem;margin-bottom:16px;">💾</div>
+        <h3>No saved designs yet</h3>
+        <p>Start customizing a shoe and save your creation.</p>
+        <a href="studio.html" class="btn btn-accent" style="margin-top:16px;">Open Studio</a>
+      </div>
+    </div>
+  </main>
+  <footer id="site-footer"></footer>
+  <script src="../js/data.js"></script><script src="../js/store.js"></script><script src="../js/colors.js"></script><script src="../js/main.js"></script>
+  <script>
+    function renderSaved() {
+      const saved = getState().saved;
+      document.getElementById('saved-count').textContent = saved.length + ' design' + (saved.length !== 1 ? 's' : '');
+
+      if (saved.length === 0) {
+        document.getElementById('saved-grid').style.display = 'none';
+        document.getElementById('saved-empty').style.display = '';
+        return;
+      }
+      document.getElementById('saved-grid').style.display = '';
+      document.getElementById('saved-empty').style.display = 'none';
+
+      document.getElementById('saved-grid').innerHTML = `<div class="product-grid-3">${saved.map(d => {
+        const shoe = d.shoeId ? getShoe(d.shoeId) : null;
+        const mat = d.materialId ? getMaterial(d.materialId) : null;
+        const sol = d.soleId ? getSole(d.soleId) : null;
+        const parts = ['upper','toe','heel','stripe','laces','sole'];
+        return `<div class="panel" style="overflow:hidden;">
+          <div style="background:var(--stone-100);padding:20px;border-radius:var(--radius-xl);margin-bottom:12px;display:flex;justify-content:center;">
+            ${renderShoeArt({ colors: d.colors || defaultColors, soleId: d.soleId, materialId: d.materialId, decos: d.decos || [], width: 260 })}
+          </div>
+          <h4 style="margin-bottom:4px;">${d.name}</h4>
+          <p style="font-size:.75rem;color:var(--text-muted);margin-bottom:8px;">${formatDate(d.date)}</p>
+          <div style="font-size:.8125rem;color:var(--text-body);margin-bottom:8px;">
+            ${shoe ? shoe.name : '—'} · ${mat ? mat.name : '—'} · ${sol ? sol.name : '—'}
+          </div>
+          <div style="display:flex;gap:4px;margin-bottom:8px;">
+            ${parts.map(p => `<span style="width:16px;height:16px;border-radius:50%;background:${(d.colors||{})[p]||'#ccc'};border:1px solid var(--border-color);"></span>`).join('')}
+          </div>
+          <div style="font-weight:700;color:var(--accent);margin-bottom:12px;">${bdt(d.totalPrice || 0)}</div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-primary btn-sm" onclick="loadSavedDesign('${d.id}');showToast('Design loaded!','success');window.location.href='studio.html';">Load</button>
+            <button class="btn btn-outline btn-sm" onclick="deleteSaved('${d.id}')">Delete</button>
+          </div>
+        </div>`;
+      }).join('')}</div>`;
+    }
+
+    function deleteSaved(id) {
+      showConfirm('Delete Design', 'Are you sure you want to delete this design?', () => {
+        removeSavedDesign(id);
+        renderSaved();
+        showToast('Design deleted', 'default');
+      });
+    }
+
+    subscribe(renderSaved);
+    renderSaved();
+  </script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Remix Design — VAYELLE</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main class="main-content">
+    <div class="section-container">
+      <div id="remix-header"></div>
+
+      <div class="two-col-layout" style="padding:0;margin-top:24px;">
+        <!-- Live Preview Canvas -->
+        <div>
+          <div class="panel" style="background:var(--stone-100);padding:32px;border-radius:var(--radius-2xl);text-align:center;">
+            <div id="remix-art" style="display:flex;justify-content:center;"></div>
+            <div style="margin-top:16px;display:flex;justify-content:center;gap:12px;align-items:center;">
+              <span class="badge badge-accent" id="remix-credit-badge"></span>
+              <strong style="color:var(--text-heading);" id="remix-price"></strong>
+            </div>
+          </div>
+          <div style="margin-top:20px;display:flex;gap:12px;">
+            <button class="btn btn-accent btn-lg" style="flex:1;" onclick="saveRemixedDesign()">Save As My Remix</button>
+            <button class="btn btn-outline btn-lg" onclick="openInFullStudio()">Full Studio →</button>
+          </div>
+        </div>
+
+        <!-- Remix Customizer Controls -->
+        <div>
+          <!-- Shoe Part Color Override -->
+          <div class="panel" style="margin-bottom:20px;">
+            <h4 style="margin-bottom:12px;">Modify Colors</h4>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;" id="part-chips"></div>
+            <div style="display:grid;grid-template-columns:repeat(7, 1fr);gap:8px;" id="palette-grid"></div>
+          </div>
+
+          <!-- Material Switcher -->
+          <div class="panel" style="margin-bottom:20px;">
+            <h4 style="margin-bottom:12px;">Swap Material</h4>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;" id="material-chips"></div>
+          </div>
+
+          <!-- Sole Switcher -->
+          <div class="panel" style="margin-bottom:20px;">
+            <h4 style="margin-bottom:12px;">Swap Sole</h4>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;" id="sole-chips"></div>
+          </div>
+
+          <!-- Quick Decorations List -->
+          <div class="panel">
+            <h4 style="margin-bottom:12px;">Decorative Accents</h4>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;" id="deco-chips"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer id="site-footer"></footer>
+
+  <script src="../js/data.js"></script>
+  <script src="../js/store.js"></script>
+  <script src="../js/colors.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    const designId = getQueryParam('id') || 'dhaka-dusk';
+    const baseDesign = communityDesigns.find(d => d.id === designId) || communityDesigns[0];
+
+    // Local clone state for remixing
+    let remixState = {
+      shoeId: baseDesign.shoe,
+      materialId: baseDesign.material,
+      soleId: baseDesign.sole,
+      colors: { ...baseDesign.colors },
+      decos: (baseDesign.decos || []).map((id, idx) => ({ uid: 'remix_' + idx, id: id, x: 50, y: 40, scale: 1 }))
+    };
+
+    let selectedPart = 'upper';
+    const parts = ['upper', 'toe', 'heel', 'stripe', 'laces', 'sole'];
+
+    function initRemix() {
+      document.getElementById('remix-header').innerHTML = `
+        <nav class="breadcrumb-nav">
+          <a href="../index.html">Home</a><span class="separator">/</span>
+          <a href="community.html">Community</a><span class="separator">/</span>
+          <a href="community-detail.html?id=${baseDesign.id}">${baseDesign.name}</a><span class="separator">/</span>
+          <span>Remix</span>
+        </nav>
+        <div class="page-header" style="padding:0 0 12px;">
+          <p class="eyebrow">Creative Remixing</p>
+          <h1>Remixing: "${baseDesign.name}"</h1>
+          <p>Credit will always be preserved for <strong>${baseDesign.creator}</strong>.</p>
+        </div>
+      `;
+
+      document.getElementById('remix-credit-badge').textContent = 'Original by ' + baseDesign.creator;
+
+      renderPartChips();
+      renderPaletteGrid();
+      renderMaterialChips();
+      renderSoleChips();
+      renderDecoChips();
+      renderRemixArt();
+    }
+
+    function renderPartChips() {
+      document.getElementById('part-chips').innerHTML = parts.map(p => `
+        <button class="chip ${selectedPart === p ? 'active' : ''}" onclick="selectedPart='${p}';renderPartChips();">
+          <span style="width:10px;height:10px;border-radius:50%;background:${remixState.colors[p]||'#ccc'};display:inline-block;border:1px solid var(--border-color);"></span>
+          ${p}
+        </button>
+      `).join('');
+    }
+
+    function renderPaletteGrid() {
+      document.getElementById('palette-grid').innerHTML = colorPalette.slice(0, 14).map(c => `
+        <div onclick="applyRemixColor('${c.hex}')" style="width:34px;height:34px;border-radius:50%;background:${c.hex};cursor:pointer;border:2px solid ${remixState.colors[selectedPart] === c.hex ? 'var(--accent)' : 'var(--border-color)'};transition:all 0.15s;" title="${c.name}"></div>
+      `).join('');
+    }
+
+    function renderMaterialChips() {
+      document.getElementById('material-chips').innerHTML = materials.filter(m => m.available).map(m => `
+        <button class="chip ${remixState.materialId === m.id ? 'active' : ''}" onclick="remixState.materialId='${m.id}';renderMaterialChips();renderRemixArt();">
+          ${m.name} (+${bdt(m.price)})
+        </button>
+      `).join('');
+    }
+
+    function renderSoleChips() {
+      document.getElementById('sole-chips').innerHTML = soles.map(s => `
+        <button class="chip ${remixState.soleId === s.id ? 'active' : ''}" onclick="remixState.soleId='${s.id}';renderSoleChips();renderRemixArt();">
+          ${s.name} (${s.price > 0 ? '+' + bdt(s.price) : 'Free'})
+        </button>
+      `).join('');
+    }
+
+    function renderDecoChips() {
+      const activeIds = remixState.decos.map(d => d.id);
+      document.getElementById('deco-chips').innerHTML = decorations.slice(0, 6).map(d => {
+        const has = activeIds.includes(d.id);
+        return `
+          <button class="chip ${has ? 'active' : ''}" onclick="toggleRemixDeco('${d.id}')">
+            ${d.glyph} ${d.name} (+${bdt(d.price)})
+          </button>
+        `;
+      }).join('');
+    }
+
+    function applyRemixColor(hex) {
+      remixState.colors[selectedPart] = hex;
+      renderPartChips();
+      renderPaletteGrid();
+      renderRemixArt();
+    }
+
+    function toggleRemixDeco(id) {
+      const idx = remixState.decos.findIndex(d => d.id === id);
+      if (idx >= 0) remixState.decos.splice(idx, 1);
+      else remixState.decos.push({ uid: 'remix_' + Date.now(), id: id, x: 50, y: 40, scale: 1 });
+      renderDecoChips();
+      renderRemixArt();
+    }
+
+    function calculateRemixPrice() {
+      const shoeObj = getShoe(remixState.shoeId) || shoes[0];
+      const matObj = getMaterial(remixState.materialId);
+      const soleObj = getSole(remixState.soleId);
+      let total = shoeObj.price + (matObj ? matObj.price : 0) + (soleObj ? soleObj.price : 0);
+      remixState.decos.forEach(dc => {
+        const d = getDecoration(dc.id);
+        if (d) total += d.price;
+      });
+      return total;
+    }
+
+    function renderRemixArt() {
+      document.getElementById('remix-art').innerHTML = renderShoeArt({
+        colors: remixState.colors,
+        soleId: remixState.soleId,
+        materialId: remixState.materialId,
+        decos: remixState.decos,
+        width: 380
+      });
+      document.getElementById('remix-price').textContent = 'Est: ' + bdt(calculateRemixPrice());
+    }
+
+    function saveRemixedDesign() {
+      selectShoe(remixState.shoeId);
+      selectMaterial(remixState.materialId);
+      selectSole(remixState.soleId);
+      updateDesign({
+        colors: { ...remixState.colors },
+        decos: [...remixState.decos]
+      });
+      const designName = 'Remix of ' + baseDesign.name;
+      saveCurrentDesign(designName);
+      showToast('Remix successfully saved to your designs!', 'success');
+      setTimeout(() => { window.location.href = 'saved.html'; }, 600);
+    }
+
+    function openInFullStudio() {
+      selectShoe(remixState.shoeId);
+      selectMaterial(remixState.materialId);
+      selectSole(remixState.soleId);
+      updateDesign({
+        colors: { ...remixState.colors },
+        decos: [...remixState.decos]
+      });
+      window.location.href = 'studio.html';
+    }
+
+    initRemix();
+  </script>
+</body>
+</html>

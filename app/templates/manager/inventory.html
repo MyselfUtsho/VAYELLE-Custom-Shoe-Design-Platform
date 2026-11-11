@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Inventory Management — VAYELLE Manager{% endblock %}
+
+{% block content %}
+<div class="section-container">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;margin-bottom:28px;">
+    <div>
+      <nav class="breadcrumb-nav">
+        <a href="{{ url_for('main.index') }}">Home</a><span class="separator">/</span>
+        <a href="{{ url_for('manager.dashboard') }}">Manager Dashboard</a><span class="separator">/</span>
+        <span>Inventory</span>
+      </nav>
+      <h1 style="font-size:2.25rem;margin-top:4px;">Shoe Inventory Database</h1>
+      <p style="color:var(--text-muted);font-size:0.9375rem;">
+        Comprehensive view of all footwear records stored in MongoDB (Collection: <code>shoes</code>).
+      </p>
+    </div>
+
+    <div style="display:flex;gap:12px;">
+      <a href="{{ url_for('manager.dashboard') }}" class="btn btn-accent">
+        + Add New Shoe
+      </a>
+      <a href="{{ url_for('manager.dashboard') }}" class="btn btn-outline">
+        ← Back to Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- Filter chips -->
+  <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+    <button class="chip active" onclick="filterTable('all', this)">All ({{ shoes|length }})</button>
+    <button class="chip" onclick="filterTable('Sneakers', this)">Sneakers</button>
+    <button class="chip" onclick="filterTable('Casual', this)">Casual</button>
+    <button class="chip" onclick="filterTable('Formal', this)">Formal</button>
+    <button class="chip" onclick="filterTable('In Stock', this)">In Stock</button>
+  </div>
+
+  <!-- Inventory Table -->
+  {% if shoes and shoes|length > 0 %}
+    <div class="panel" style="padding:0;overflow:hidden;">
+      <div style="overflow-x:auto;">
+        <table class="comparison-table" id="inventory-table">
+          <thead>
+            <tr>
+              <th style="width:80px;">Image</th>
+              <th>Shoe Name</th>
+              <th>Category</th>
+              <th>Target Gender</th>
+              <th>Base Price</th>
+              <th>Inventory Status</th>
+              <th>Added Date</th>
+              <th style="text-align:right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for shoe in shoes %}
+              <tr class="inv-row" data-category="{{ shoe.category }}" data-status="{{ shoe.availability }}">
+                <td>
+                  <img 
+                    src="{{ shoe.image_url }}" 
+                    alt="{{ shoe.shoe_name }}" 
+                    style="width:50px;height:50px;border-radius:var(--radius-sm);object-fit:cover;background:var(--stone-100);"
+                    onerror="this.src='/static/images/shoe-black-runner.jpg'"
+                  >
+                </td>
+                <td style="font-weight:700;color:var(--text-heading);">
+                  {{ shoe.shoe_name }}
+                  {% if shoe.description %}
+                    <div style="font-size:0.75rem;color:var(--text-muted);font-weight:normal;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                      {{ shoe.description }}
+                    </div>
+                  {% endif %}
+                </td>
+                <td><span class="badge badge-default">{{ shoe.category }}</span></td>
+                <td>{{ shoe.gender }}</td>
+                <td style="font-weight:700;color:var(--accent);">{{ bdt(shoe.base_price) }}</td>
+                <td>
+                  <span class="badge {% if shoe.availability == 'In Stock' %}badge-success{% elif shoe.availability == 'Low Stock' %}badge-warning{% else %}badge-danger{% endif %}">
+                    {{ shoe.availability }}
+                  </span>
+                </td>
+                <td style="font-size:0.8125rem;color:var(--text-muted);">
+                  {% if shoe.created_at %}
+                    {{ shoe.created_at.strftime('%b %d, %Y') }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+                <td style="text-align:right;">
+                  <form method="POST" action="{{ url_for('manager.delete_shoe', shoe_id=shoe._id) }}" style="display:inline;" onsubmit="return confirm('Permanently remove {{ shoe.shoe_name }} from MongoDB?');">
+                    <button type="submit" class="btn btn-outline btn-sm" style="color:var(--stone-600);padding:4px 10px;font-size:0.75rem;">
+                      Delete
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% else %}
+    <div class="panel empty-state">
+      <div style="font-size:3rem;margin-bottom:12px;">👟</div>
+      <h3>No Shoes in MongoDB Inventory</h3>
+      <p style="margin:8px 0 20px;">Use the manager form to save the first shoe silhouette.</p>
+      <a href="{{ url_for('manager.dashboard') }}" class="btn btn-accent">
+        + Add Shoe Now
+      </a>
+    </div>
+  {% endif %}
+</div>
+
+<script>
+  function filterTable(val, btn) {
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    
+    const rows = document.querySelectorAll('.inv-row');
+    rows.forEach(row => {
+      if (val === 'all') {
+        row.style.display = '';
+      } else {
+        const cat = row.getAttribute('data-category');
+        const stat = row.getAttribute('data-status');
+        if (cat === val || stat === val) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      }
+    });
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Recommendations — VAYELLE</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main class="main-content">
+    <div class="section-container">
+      <div class="page-header" style="padding:0 0 24px;">
+        <p class="eyebrow">AI-Powered</p>
+        <h1>Smart Shoe Recommendations</h1>
+        <p>Curated shoe suggestions tuned to your style preferences and outfit analysis.</p>
+      </div>
+
+      <!-- User Preferences Panel -->
+      <div class="panel" style="margin-bottom:32px;">
+        <h3 style="margin-bottom:16px;">Customize Your Recommendation Match</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:20px;">
+          <div>
+            <label class="form-label">Style Direction</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;" id="rec-style-chips">
+              <button class="chip active" onclick="setRecStyle('all', this)">All</button>
+              <button class="chip" onclick="setRecStyle('streetwear', this)">Streetwear</button>
+              <button class="chip" onclick="setRecStyle('casual', this)">Casual</button>
+              <button class="chip" onclick="setRecStyle('formal', this)">Formal</button>
+            </div>
+          </div>
+          <div>
+            <label class="form-label">Maximum Budget</label>
+            <input type="range" class="range-slider" min="2000" max="6000" step="200" value="4500" id="rec-budget" oninput="updateRecBudget(this.value)">
+            <div style="display:flex;justify-content:space-between;font-size:0.8125rem;color:var(--text-muted);margin-top:6px;">
+              <span>৳2,000</span>
+              <span id="rec-budget-val" style="font-weight:700;color:var(--accent);">৳4,500</span>
+              <span>৳6,000</span>
+            </div>
+          </div>
+          <div>
+            <label class="form-label">Color Tone</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;" id="rec-tone-chips">
+              <button class="chip active" onclick="setRecTone('any', this)">Any Tone</button>
+              <button class="chip" onclick="setRecTone('dark', this)">Monochrome / Dark</button>
+              <button class="chip" onclick="setRecTone('light', this)">Clean / Light</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Outfit Matching Banner -->
+      <div id="outfit-match-banner" class="panel bg-cream" style="margin-bottom:32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;"></div>
+
+      <!-- Recommendation Grid -->
+      <div class="section-header" style="text-align:left;margin-bottom:20px;">
+        <h3>Top Matched Silhouettes</h3>
+      </div>
+      <div class="product-grid-3" id="rec-shoes-grid"></div>
+
+      <!-- Color Harmonization Box -->
+      <div class="panel" style="margin-top:40px;">
+        <h3 style="margin-bottom:12px;">Suggested Customization Combinations</h3>
+        <p style="font-size:0.875rem;color:var(--text-muted);margin-bottom:20px;">These base-and-accent palettes are mathematically harmonized to stand out in streetwear and smart-casual looks.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:16px;" id="harmony-cards"></div>
+      </div>
+
+      <div style="text-align:center;margin-top:40px;">
+        <a href="studio.html" class="btn btn-accent btn-lg">Open Design Studio with Matched Vibe</a>
+      </div>
+    </div>
+  </main>
+  <footer id="site-footer"></footer>
+
+  <script src="../js/data.js"></script>
+  <script src="../js/store.js"></script>
+  <script src="../js/colors.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    let filterStyle = 'all';
+    let filterBudget = 4500;
+    let filterTone = 'any';
+
+    function setRecStyle(st, btn) {
+      filterStyle = st;
+      document.querySelectorAll('#rec-style-chips .chip').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      renderRecommendations();
+    }
+
+    function setRecTone(tn, btn) {
+      filterTone = tn;
+      document.querySelectorAll('#rec-tone-chips .chip').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      renderRecommendations();
+    }
+
+    function updateRecBudget(val) {
+      filterBudget = parseInt(val);
+      document.getElementById('rec-budget-val').textContent = bdt(filterBudget);
+      renderRecommendations();
+    }
+
+    function renderRecommendations() {
+      const outfit = getState().outfit;
+      const banner = document.getElementById('outfit-match-banner');
+      if (outfit) {
+        banner.innerHTML = `
+          <div style="display:flex;align-items:center;gap:16px;">
+            <img src="${outfit}" style="width:60px;height:60px;border-radius:var(--radius-md);object-fit:cover;">
+            <div>
+              <strong style="color:var(--text-heading);">Outfit Profile Active</strong>
+              <div style="font-size:0.8125rem;color:var(--text-muted);">Scores are adjusted using color harmony with your uploaded attire.</div>
+            </div>
+          </div>
+          <a href="outfit-analysis.html" class="btn btn-outline btn-sm">Inspect Outfit Analysis</a>
+        `;
+      } else {
+        banner.innerHTML = `
+          <div>
+            <strong style="color:var(--text-heading);">Enhance accuracy with your outfit</strong>
+            <div style="font-size:0.8125rem;color:var(--text-muted);">Upload a style photo to get dominant color matching.</div>
+          </div>
+          <a href="outfit-upload.html" class="btn btn-primary btn-sm">Upload Outfit</a>
+        `;
+      }
+
+      // Filter & calculate score
+      let scored = shoes.map(s => {
+        let matchScore = 80;
+        if (filterStyle !== 'all') {
+          if (s.style === filterStyle) matchScore += 14;
+          else matchScore -= 15;
+        }
+        if (s.price <= filterBudget) matchScore += 6;
+        else matchScore -= 18;
+
+        if (filterTone === 'dark' && (s.colors.includes('#000000') || s.colors.includes('#1A1A1A'))) matchScore += 5;
+        if (filterTone === 'light' && (s.colors.includes('#FFFFFF') || s.colors.includes('#FAF0E6'))) matchScore += 5;
+
+        matchScore = Math.max(65, Math.min(99, matchScore));
+        return { ...s, matchScore };
+      });
+
+      scored.sort((a, b) => b.matchScore - a.matchScore);
+
+      document.getElementById('rec-shoes-grid').innerHTML = scored.map(s => `
+        <div style="position:relative;">
+          <div style="position:absolute;top:12px;right:12px;z-index:2;background:rgba(28,25,23,0.85);color:white;padding:4px 10px;border-radius:var(--radius-full);font-size:0.75rem;font-weight:700;backdrop-filter:blur(4px);">
+            ${s.matchScore}% Vibe Match
+          </div>
+          ${renderProductCard(s, '../')}
+        </div>
+      `).join('');
+
+      // Harmonies
+      const combos = [
+        { title: 'Dusk Streetwear', base: '#1D2A44', accent: '#F36B38', sole: '#FFFFFF', desc: 'Deep navy upper paired with sharp VAYELLE orange accents.' },
+        { title: 'Earth Luxe', base: '#6B6B3A', accent: '#C9A877', sole: '#171717', desc: 'Tactical olive contrasted against warm tan leather and dark sole.' },
+        { title: 'Minimalist Clean', base: '#F8F7F3', accent: '#BFD7E6', sole: '#E9E2D4', desc: 'Off-white chalk canvas infused with glacial blue details.' }
+      ];
+
+      document.getElementById('harmony-cards').innerHTML = combos.map(c => `
+        <div class="panel" style="padding:16px;">
+          <div style="display:flex;gap:6px;margin-bottom:12px;">
+            <span style="width:28px;height:28px;border-radius:50%;background:${c.base};border:1px solid var(--border-color);" title="Base: ${c.base}"></span>
+            <span style="width:28px;height:28px;border-radius:50%;background:${c.accent};border:1px solid var(--border-color);" title="Accent: ${c.accent}"></span>
+            <span style="width:28px;height:28px;border-radius:50%;background:${c.sole};border:1px solid var(--border-color);" title="Sole: ${c.sole}"></span>
+          </div>
+          <strong style="font-size:0.9375rem;">${c.title}</strong>
+          <p style="font-size:0.8125rem;color:var(--text-muted);margin-top:4px;">${c.desc}</p>
+          <button class="btn btn-outline btn-sm" style="width:100%;margin-top:10px;" onclick="applyPalette('${c.base}','${c.accent}','${c.sole}')">Apply This Vibe</button>
+        </div>
+      `).join('');
+    }
+
+    function applyPalette(base, acc, sole) {
+      setColor('upper', base);
+      setColor('heel', acc);
+      setColor('stripe', acc);
+      setColor('sole', sole);
+      showToast('Color palette applied to current design!', 'success');
+      setTimeout(() => { window.location.href = 'studio.html'; }, 600);
+    }
+
+    renderRecommendations();
+  </script>
+</body>
+</html>

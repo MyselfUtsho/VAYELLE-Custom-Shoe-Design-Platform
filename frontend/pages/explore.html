@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Explore — VAYELLE</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main class="main-content">
+    <div class="section-container">
+      <!-- Page Header -->
+      <div class="page-header" style="padding-left:0;padding-right:0;">
+        <p class="eyebrow">Collection</p>
+        <h1>Explore Shoes</h1>
+        <p>Discover our curated collection of customizable footwear.</p>
+      </div>
+
+      <!-- Filter Bar -->
+      <div style="border-top:1px solid var(--border-color);border-bottom:1px solid var(--border-color);padding:16px 0;margin-bottom:24px;display:flex;flex-wrap:wrap;align-items:center;gap:16px;">
+        <!-- Gender Filters -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;" id="gender-filters">
+          <button class="chip active" onclick="setGender('All')">All</button>
+          <button class="chip" onclick="setGender('Men')">Men</button>
+          <button class="chip" onclick="setGender('Women')">Women</button>
+          <button class="chip" onclick="setGender('Unisex')">Unisex</button>
+        </div>
+        <div style="width:1px;height:24px;background:var(--border-color);" class="hide-mobile"></div>
+        <!-- Type Filters -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;" id="type-filters">
+          <button class="chip active" onclick="setType('All')">All</button>
+          <button class="chip" onclick="setType('Sneakers')">Sneakers</button>
+          <button class="chip" onclick="setType('Casual')">Casual</button>
+          <button class="chip" onclick="setType('Formal')">Formal</button>
+        </div>
+        <div style="flex:1;"></div>
+        <!-- Search -->
+        <div style="position:relative;">
+          <input type="text" class="form-input" placeholder="Search shoes..." id="search-input" oninput="filterShoes()" style="padding-left:36px;width:220px;">
+          <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);">${icons.search || ''}</span>
+        </div>
+        <!-- Sort -->
+        <select class="form-select" id="sort-select" onchange="filterShoes()" style="width:180px;">
+          <option value="featured">Featured</option>
+          <option value="price-asc">Price: Low → High</option>
+          <option value="price-desc">Price: High → Low</option>
+          <option value="rating">Top Rated</option>
+        </select>
+      </div>
+
+      <!-- Results Count -->
+      <div style="margin-bottom:16px;" id="results-count"></div>
+
+      <!-- Product Grid -->
+      <div class="product-grid-3" id="shoe-grid"></div>
+
+      <!-- Empty State -->
+      <div class="empty-state" id="empty-state" style="display:none;">
+        <div style="font-size:3rem;margin-bottom:16px;">👟</div>
+        <h3>No shoes found</h3>
+        <p>Try adjusting your filters or search term.</p>
+      </div>
+    </div>
+  </main>
+  <footer id="site-footer"></footer>
+
+  <script src="../js/data.js"></script>
+  <script src="../js/store.js"></script>
+  <script src="../js/colors.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    let activeGender = 'All';
+    let activeType = 'All';
+
+    function setGender(g) {
+      activeGender = g;
+      document.querySelectorAll('#gender-filters .chip').forEach(c => c.classList.toggle('active', c.textContent.trim() === g));
+      filterShoes();
+    }
+
+    function setType(t) {
+      activeType = t;
+      document.querySelectorAll('#type-filters .chip').forEach(c => c.classList.toggle('active', c.textContent.trim() === t));
+      filterShoes();
+    }
+
+    function filterShoes() {
+      const query = document.getElementById('search-input').value.toLowerCase();
+      const sort = document.getElementById('sort-select').value;
+
+      let filtered = shoes.filter(s => {
+        if (activeGender !== 'All' && s.gender !== activeGender) return false;
+        if (activeType !== 'All' && s.type !== activeType) return false;
+        if (query && !s.name.toLowerCase().includes(query) && !s.type.toLowerCase().includes(query) && !s.description.toLowerCase().includes(query)) return false;
+        return true;
+      });
+
+      // Sort
+      if (sort === 'price-asc') filtered.sort((a, b) => a.price - b.price);
+      else if (sort === 'price-desc') filtered.sort((a, b) => b.price - a.price);
+      else if (sort === 'rating') filtered.sort((a, b) => b.rating - a.rating);
+
+      document.getElementById('results-count').innerHTML = `<span class="badge badge-default">${filtered.length} shoe${filtered.length !== 1 ? 's' : ''}</span>`;
+      document.getElementById('shoe-grid').innerHTML = filtered.map(s => renderProductCard(s, '../')).join('');
+      document.getElementById('shoe-grid').style.display = filtered.length ? '' : 'none';
+      document.getElementById('empty-state').style.display = filtered.length ? 'none' : '';
+    }
+
+    filterShoes();
+  </script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Create Account — VAYELLE{% endblock %}
+
+{% block content %}
+<div class="auth-form fade-up">
+  <div class="auth-header">
+    <a href="{{ url_for('main.index') }}" class="vayelle-logo" style="font-size:2rem;">
+      VAYELLE<span style="color:var(--accent);">●</span>
+    </a>
+    <h1 style="margin-top:12px;font-size:1.75rem;">Create Account</h1>
+    <p style="color:var(--text-muted);font-size:0.875rem;">
+      Register as a VAYELLE user to save personalized shoes and curate design palettes.
+    </p>
+  </div>
+
+  <div class="panel" style="padding:28px;">
+    <form method="POST" action="{{ url_for('auth.register') }}">
+      <div class="form-group">
+        <label class="form-label" for="reg-name">Full Name *</label>
+        <input 
+          type="text" 
+          class="form-input" 
+          id="reg-name" 
+          name="name" 
+          placeholder="e.g. Athoy Roy" 
+          required 
+          value="{{ name or '' }}"
+          autocomplete="name"
+        >
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="reg-email">Email Address *</label>
+        <input 
+          type="email" 
+          class="form-input" 
+          id="reg-email" 
+          name="email" 
+          placeholder="name@university.edu" 
+          required 
+          value="{{ email or '' }}"
+          autocomplete="email"
+        >
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="reg-password">Password (min 6 characters) *</label>
+        <input 
+          type="password" 
+          class="form-input" 
+          id="reg-password" 
+          name="password" 
+          placeholder="••••••••" 
+          minlength="6" 
+          required
+          autocomplete="new-password"
+        >
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="reg-confirm">Confirm Password *</label>
+        <input 
+          type="password" 
+          class="form-input" 
+          id="reg-confirm" 
+          name="confirm_password" 
+          placeholder="••••••••" 
+          minlength="6" 
+          required
+          autocomplete="new-password"
+        >
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="reg-size">Preferred Shoe Size (EU Optional)</label>
+        <select class="form-select" id="reg-size" name="preferred_size">
+          <option value="">Select Usual Size</option>
+          <option value="36" {% if preferred_size == '36' %}selected{% endif %}>EU 36 (22.5 cm)</option>
+          <option value="37" {% if preferred_size == '37' %}selected{% endif %}>EU 37 (23.0 cm)</option>
+          <option value="38" {% if preferred_size == '38' %}selected{% endif %}>EU 38 (24.0 cm)</option>
+          <option value="39" {% if preferred_size == '39' %}selected{% endif %}>EU 39 (24.5 cm)</option>
+          <option value="40" {% if preferred_size == '40' %}selected{% endif %}>EU 40 (25.5 cm)</option>
+          <option value="41" {% if preferred_size == '41' %}selected{% endif %}>EU 41 (26.0 cm)</option>
+          <option value="42" {% if preferred_size == '42' or not preferred_size %}selected{% endif %}>EU 42 (27.0 cm)</option>
+          <option value="43" {% if preferred_size == '43' %}selected{% endif %}>EU 43 (27.5 cm)</option>
+          <option value="44" {% if preferred_size == '44' %}selected{% endif %}>EU 44 (28.5 cm)</option>
+          <option value="45" {% if preferred_size == '45' %}selected{% endif %}>EU 45 (29.0 cm)</option>
+          <option value="46" {% if preferred_size == '46' %}selected{% endif %}>EU 46 (29.5 cm)</option>
+        </select>
+      </div>
+
+      <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:16px;">
+        Account security notice: All passwords are encrypted with scrypt hashing. Manager privileges are assigned securely via management controls.
+      </p>
+
+      <button type="submit" class="btn btn-accent btn-lg" style="width:100%;">
+        Register Account
+      </button>
+    </form>
+
+    <div class="auth-divider">ALREADY REGISTERED?</div>
+
+    <p style="text-align:center;font-size:0.8125rem;">
+      <a href="{{ url_for('auth.login') }}" class="btn btn-outline" style="width:100%;">
+        Sign In with Existing Credentials
+      </a>
+    </p>
+  </div>
+</div>
+{% endblock %}

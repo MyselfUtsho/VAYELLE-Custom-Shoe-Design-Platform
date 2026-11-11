@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Category — VAYELLE</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main class="main-content">
+    <div class="section-container" id="category-page"></div>
+  </main>
+  <footer id="site-footer"></footer>
+  <script src="../js/data.js"></script>
+  <script src="../js/store.js"></script>
+  <script src="../js/colors.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    const cat = getQueryParam('cat');
+    const catMap = {
+      men:      { title: "Men's Collection", desc: 'Explore our range of men\'s footwear — from formal to street.', filter: s => s.gender === 'Men' || s.gender === 'Unisex' },
+      women:    { title: "Women's Collection", desc: 'Discover stylish women\'s shoes designed for every occasion.', filter: s => s.gender === 'Women' || s.gender === 'Unisex' },
+      unisex:   { title: 'Unisex Collection', desc: 'Gender-neutral designs that fit every style.', filter: s => s.gender === 'Unisex' },
+      sneakers: { title: 'Sneakers', desc: 'Street-ready sneakers with premium comfort.', filter: s => s.type === 'Sneakers' },
+      formal:   { title: 'Formal Shoes', desc: 'Refined formal footwear for every occasion.', filter: s => s.type === 'Formal' },
+      casual:   { title: 'Casual Shoes', desc: 'Everyday casual shoes for effortless style.', filter: s => s.type === 'Casual' }
+    };
+
+    const page = document.getElementById('category-page');
+    if (cat && catMap[cat]) {
+      const info = catMap[cat];
+      const filtered = shoes.filter(info.filter);
+      page.innerHTML = `
+        <nav class="breadcrumb-nav">
+          <a href="../index.html">Home</a><span class="separator">/</span>
+          <a href="explore.html">Explore</a><span class="separator">/</span>
+          <span>${info.title}</span>
+        </nav>
+        <div class="page-header" style="padding:0 0 24px;">
+          <h1>${info.title}</h1>
+          <p>${info.desc}</p>
+        </div>
+        <div class="product-grid-3">${filtered.map(s => renderProductCard(s, '../')).join('')}</div>
+        ${filtered.length === 0 ? '<div class="empty-state"><h3>No shoes in this category</h3></div>' : ''}
+        <div style="margin-top:32px;"><a href="explore.html" class="btn btn-outline">← Back to Explore</a></div>
+      `;
+    } else {
+      page.innerHTML = '<div class="empty-state"><h3>Category not found</h3><p>The category you are looking for does not exist.</p><a href="explore.html" class="btn btn-primary" style="margin-top:16px;">Browse All Shoes</a></div>';
+    }
+  </script>
+</body>
+</html>

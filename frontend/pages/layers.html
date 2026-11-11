@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Layers — VAYELLE</title>
+  <link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/components.css"><link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main class="main-content studio-theme">
+    <div class="section-container">
+      <div class="page-header" style="padding:0 0 24px;"><p class="eyebrow">Layers</p><h1>Layer Simulation</h1><p style="color:var(--stone-400);">Toggle and inspect individual design layers.</p></div>
+      <div class="two-col-layout" style="padding:0;">
+        <!-- Before/After Slider -->
+        <div>
+          <div style="position:relative;border-radius:var(--radius-2xl);overflow:hidden;background:var(--stone-800);padding:24px;" id="layer-compare">
+            <div style="position:relative;">
+              <div id="before-art" style="position:absolute;inset:0;z-index:1;"></div>
+              <div id="after-art" style="position:relative;z-index:2;"></div>
+              <div id="slider-line" style="position:absolute;top:0;bottom:0;width:3px;background:var(--accent);z-index:3;left:50%;"></div>
+            </div>
+            <input type="range" min="0" max="100" value="50" style="width:100%;margin-top:16px;" class="range-slider" id="compare-slider" oninput="updateCompare()">
+            <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--stone-500);margin-top:4px;"><span>Original</span><span>Your Design</span></div>
+          </div>
+        </div>
+        <!-- Layer Controls -->
+        <div>
+          <div class="studio-panel" style="padding:20px;margin-bottom:16px;">
+            <h4 style="margin-bottom:12px;">Base Layers</h4>
+            <div id="base-layers"></div>
+          </div>
+          <div class="studio-panel" style="padding:20px;margin-bottom:16px;">
+            <h4 style="margin-bottom:12px;">Decorations</h4>
+            <div id="deco-layers"></div>
+          </div>
+          <button class="btn studio-btn" style="width:100%;" onclick="resetLayers()">Reset All Layers</button>
+          <a href="preview.html" class="btn btn-accent" style="width:100%;margin-top:8px;">Back to Preview</a>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer id="site-footer"></footer>
+  <script src="../js/data.js"></script><script src="../js/store.js"></script><script src="../js/colors.js"></script><script src="../js/main.js"></script>
+  <script>
+    const layerNames = ['sole','upper','toe','heel','stripe','laces'];
+
+    function updateCompare() {
+      const v = document.getElementById('compare-slider').value;
+      document.getElementById('after-art').style.clipPath = `inset(0 0 0 ${v}%)`;
+      document.getElementById('slider-line').style.left = v + '%';
+    }
+
+    function renderLayerArts() {
+      const d = getCurrentDesign();
+      document.getElementById('before-art').innerHTML = renderShoeArt({ colors: defaultColors, width: 400 });
+      document.getElementById('after-art').innerHTML = renderShoeArt({ colors: d.colors, soleId: d.soleId, materialId: d.materialId, decos: d.decos, hidden: d.hidden, width: 400 });
+      updateCompare();
+    }
+
+    function renderLayerControls() {
+      const d = getCurrentDesign();
+      document.getElementById('base-layers').innerHTML = layerNames.map(l => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--stone-700);">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="width:14px;height:14px;border-radius:50%;background:${d.colors[l]||'#ccc'};border:1px solid var(--stone-600);"></span>
+            <span style="color:var(--stone-300);font-size:0.875rem;">${l}</span>
+          </div>
+          <button onclick="toggleLayer('${l}');renderAll();" style="background:none;border:none;cursor:pointer;color:${d.hidden[l]?'var(--stone-600)':'var(--stone-300)'};">${d.hidden[l]?icons.eyeOff:icons.eye}</button>
+        </div>
+      `).join('');
+
+      document.getElementById('deco-layers').innerHTML = d.decos.length === 0 ? '<p style="color:var(--stone-500);font-size:0.8125rem;">No decorations</p>' :
+        d.decos.map(dc => { const dec = getDecoration(dc.id); return `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--stone-700);">
+            <span style="color:var(--stone-300);font-size:0.8125rem;">${dec?dec.glyph+' '+dec.name:dc.id}</span>
+            <button onclick="removeDecoration('${dc.uid}');renderAll();" style="background:none;border:none;cursor:pointer;color:var(--stone-500);">✕</button>
+          </div>`; }).join('');
+    }
+
+    function resetLayers() {
+      const d = getCurrentDesign();
+      updateDesign({ hidden: {} });
+      renderAll();
+      showToast('Layers reset', 'default');
+    }
+
+    function renderAll() { renderLayerArts(); renderLayerControls(); }
+    renderAll();
+  </script>
+</body>
+</html>

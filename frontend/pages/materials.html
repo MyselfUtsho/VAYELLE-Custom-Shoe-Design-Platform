@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Material Selection — VAYELLE</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main class="main-content">
+    <div class="section-container">
+      <!-- Step Indicator -->
+      <div class="steps-bar">
+        <a href="explore.html" class="step-item completed"><span class="step-number">✓</span><span class="step-label">Shoe</span></a>
+        <div class="step-connector completed"></div>
+        <span class="step-item active"><span class="step-number">2</span><span class="step-label">Material</span></span>
+        <div class="step-connector"></div>
+        <a href="soles.html" class="step-item"><span class="step-number">3</span><span class="step-label">Sole</span></a>
+        <div class="step-connector"></div>
+        <a href="decorations.html" class="step-item"><span class="step-number">4</span><span class="step-label">Decor</span></a>
+        <div class="step-connector"></div>
+        <a href="studio.html" class="step-item"><span class="step-number">5</span><span class="step-label">Studio</span></a>
+      </div>
+      <div class="page-header" style="padding:0 0 24px;"><h1>Choose Your Material</h1><p>Select a material that defines the look and feel of your shoe.</p></div>
+
+      <div class="selection-grid" id="materials-grid"></div>
+
+      <div style="display:flex;justify-content:space-between;margin-top:32px;">
+        <a href="explore.html" class="btn btn-outline">← Back to Shoes</a>
+        <a href="soles.html" class="btn btn-accent btn-lg">Next: Choose Sole →</a>
+      </div>
+    </div>
+  </main>
+  <footer id="site-footer"></footer>
+  <script src="../js/data.js"></script>
+  <script src="../js/store.js"></script>
+  <script src="../js/colors.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    function renderMaterials() {
+      const currentMat = getCurrentDesign().materialId;
+      document.getElementById('materials-grid').innerHTML = materials.map(m => `
+        <div class="selection-card ${currentMat === m.id ? 'selected' : ''} ${!m.available ? 'disabled' : ''}" onclick="${m.available ? `chooseMaterial('${m.id}')` : ''}" style="${!m.available ? 'opacity:0.5;cursor:not-allowed;' : ''}">
+          <img src="${m.image}" alt="${m.name}" loading="lazy">
+          <div class="selection-card-body">
+            <h4>${m.name}</h4>
+            <p>${m.description}</p>
+            <div class="price-tag">+${bdt(m.price)}</div>
+            <div class="availability" style="margin-top:8px;">
+              <span class="availability-dot ${m.available ? 'in-stock' : 'out-of-stock'}"></span>
+              <span>${m.available ? 'In Stock' : 'Unavailable'}</span>
+            </div>
+            <div style="margin-top:8px;">
+              ${'●'.repeat(m.durability)}${'○'.repeat(5 - m.durability)}
+              <span style="font-size:0.75rem;color:var(--text-muted);margin-left:4px;">Durability</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function chooseMaterial(id) {
+      selectMaterial(id);
+      showToast(getMaterial(id).name + ' selected!', 'success');
+      renderMaterials();
+    }
+
+    renderMaterials();
+  </script>
+</body>
+</html>

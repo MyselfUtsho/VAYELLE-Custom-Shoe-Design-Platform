@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Favorites — VAYELLE</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main class="main-content">
+    <div class="section-container">
+      <div class="page-header" style="padding:0 0 24px;">
+        <p class="eyebrow">Wishlist</p>
+        <h1>Favorited Footwear</h1>
+        <p id="fav-counter-desc">Your curated favorites ready for styling and customization.</p>
+      </div>
+
+      <div class="product-grid-3" id="favorites-grid"></div>
+
+      <div class="empty-state" id="favorites-empty" style="display:none;">
+        <div style="font-size:3.5rem;margin-bottom:12px;color:var(--stone-300);">♡</div>
+        <h3>No favorite shoes saved yet</h3>
+        <p>Explore our footwear collection and tap the heart icon on shoes you like.</p>
+        <div style="margin-top:20px;">
+          <a href="explore.html" class="btn btn-primary">Browse All Shoes</a>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer id="site-footer"></footer>
+
+  <script src="../js/data.js"></script>
+  <script src="../js/store.js"></script>
+  <script src="../js/colors.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    function renderFavorites() {
+      const favIds = getState().favorites;
+      const favShoes = shoes.filter(s => favIds.includes(s.id));
+      const grid = document.getElementById('favorites-grid');
+      const empty = document.getElementById('favorites-empty');
+      const desc = document.getElementById('fav-counter-desc');
+
+      if (favShoes.length === 0) {
+        grid.style.display = 'none';
+        empty.style.display = 'block';
+        desc.textContent = 'You currently have no favorited silhouettes.';
+        return;
+      }
+
+      grid.style.display = 'grid';
+      empty.style.display = 'none';
+      desc.textContent = `Showing ${favShoes.length} saved shoe${favShoes.length > 1 ? 's' : ''}.`;
+
+      grid.innerHTML = favShoes.map(s => renderProductCard(s, '../')).join('');
+    }
+
+    subscribe(renderFavorites);
+    renderFavorites();
+  </script>
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Design Studio — VAYELLE</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main class="main-content studio-theme">
+    <!-- Top Bar -->
+    <div style="border-bottom:1px solid var(--stone-700);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <h3 style="color:white;font-size:1rem;">VAYELLE Studio</h3>
+        <select class="form-select" id="shoe-selector" onchange="changeShoe(this.value)" style="width:180px;background:var(--stone-800);color:white;border-color:var(--stone-700);"></select>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn studio-btn btn-sm" onclick="undo()" title="Undo">↩ Undo</button>
+        <button class="btn studio-btn btn-sm" onclick="redo()" title="Redo">↪ Redo</button>
+        <button class="btn studio-btn btn-sm" onclick="resetAll()">⟳ Reset</button>
+        <button class="btn btn-accent btn-sm" onclick="openSaveDialog()">💾 Save</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:64px 1fr 320px;min-height:calc(100vh - 160px);" class="studio-layout">
+      <!-- Left Toolbar -->
+      <div class="studio-left-toolbar" style="display:flex;flex-direction:column;gap:8px;padding:12px;border-right:1px solid var(--stone-700);">
+        <button class="btn btn-icon studio-btn active" id="tool-select" onclick="setTool('select')" title="Select & Move">↕</button>
+        <button class="btn btn-icon studio-btn" id="tool-color" onclick="setTool('color')" title="Colors">🎨</button>
+        <button class="btn btn-icon studio-btn" id="tool-decor" onclick="setTool('decor')" title="Decorations">✦</button>
+      </div>
+
+      <!-- Center Canvas -->
+      <div style="padding:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+        <div class="checker-bg" style="border-radius:var(--radius-2xl);padding:40px;width:100%;max-width:640px;position:relative;min-height:360px;display:flex;align-items:center;justify-content:center;" id="canvas-area"></div>
+        <div style="margin-top:16px;color:var(--stone-400);font-size:1.125rem;font-weight:600;" id="price-display"></div>
+        <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;justify-content:center;">
+          <a href="colors.html" class="chip" style="border-color:var(--stone-600);color:var(--stone-300);">🎨 Colors</a>
+          <a href="preview.html" class="chip" style="border-color:var(--stone-600);color:var(--stone-300);">👁 Preview</a>
+          <a href="layers.html" class="chip" style="border-color:var(--stone-600);color:var(--stone-300);">📑 Layers</a>
+          <a href="accessible.html" class="chip" style="border-color:var(--stone-600);color:var(--stone-300);">♿ Accessible</a>
+          <a href="price.html" class="chip" style="border-color:var(--stone-600);color:var(--stone-300);">💰 Price</a>
+        </div>
+      </div>
+
+      <!-- Right Panel -->
+      <div style="border-left:1px solid var(--stone-700);padding:20px;overflow-y:auto;max-height:calc(100vh - 160px);" id="right-panel"></div>
+    </div>
+
+    <!-- Save Dialog -->
+    <div class="modal-overlay" id="save-dialog">
+      <div class="modal-box">
+        <h3>Save Design</h3>
+        <p>Give your design a name.</p>
+        <input type="text" class="form-input" id="save-name" placeholder="My Custom Design" style="margin-bottom:16px;">
+        <div class="modal-actions">
+          <button class="btn btn-outline" onclick="closeSaveDialog()">Cancel</button>
+          <button class="btn btn-accent" onclick="saveDesign()">Save</button>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer id="site-footer"></footer>
+  <script src="../js/data.js"></script>
+  <script src="../js/store.js"></script>
+  <script src="../js/colors.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    let activeTool = 'select';
+    let selectedPart = 'upper';
+    let history = [JSON.stringify(getCurrentDesign())];
+    let historyIndex = 0;
+
+    // Populate shoe selector
+    document.getElementById('shoe-selector').innerHTML = shoes.map(s =>
+      `<option value="${s.id}" ${getCurrentDesign().shoeId === s.id ? 'selected' : ''}>${s.name} — ${bdt(s.price)}</option>`
+    ).join('');
+
+    function changeShoe(id) { selectShoe(id); pushHistory(); renderAll(); }
+
+    function setTool(tool) {
+      activeTool = tool;
+      ['select','color','decor'].forEach(t => document.getElementById('tool-' + t).classList.toggle('active', t === tool));
+      renderPanel();
+    }
+
+    function pushHistory() {
+      historyIndex++;
+      history = history.slice(0, historyIndex);
+      history.push(JSON.stringify(getCurrentDesign()));
+      if (history.length > 30) { history.shift(); historyIndex--; }
+    }
+
+    function undo() {
+      if (historyIndex <= 0) return;
+      historyIndex--;
+      const prev = JSON.parse(history[historyIndex]);
+      updateDesign(prev);
+      renderAll();
+    }
+
+    function redo() {
+      if (historyIndex >= history.length - 1) return;
+      historyIndex++;
+      const next = JSON.parse(history[historyIndex]);
+      updateDesign(next);
+      renderAll();
+    }
+
+    function resetAll() {
+      showConfirm('Reset Design', 'This will reset all your customizations. Continue?', () => {
+        resetDesign(); pushHistory(); renderAll();
+        showToast('Design reset', 'default');
+      });
+    }
+
+    function renderCanvas() {
+      const design = getCurrentDesign();
+      document.getElementById('canvas-area').innerHTML = renderShoeArt({
+        colors: design.colors, soleId: design.soleId, materialId: design.materialId,
+        decos: design.decos, hidden: design.hidden, width: 500
+      });
+      document.getElementById('price-display').textContent = 'Estimated: ' + bdt(calculatePrice());
+    }
+
+    function renderPanel() {
+      const panel = document.getElementById('right-panel');
+      const design = getCurrentDesign();
+
+      if (activeTool === 'color') {
+        const parts = ['upper','toe','heel','stripe','laces','sole'];
+        panel.innerHTML = `
+          <h4 style="color:white;margin-bottom:12px;">Color Picker</h4>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;">
+            ${parts.map(p => `<button class="chip ${selectedPart === p ? 'active' : ''}" onclick="selectedPart='${p}';renderPanel();" style="gap:4px;border-color:var(--stone-600);color:var(--stone-300);font-size:0.75rem;">
+              <span style="width:10px;height:10px;border-radius:50%;background:${design.colors[p]||'#ccc'};display:inline-block;"></span>${p}
+            </button>`).join('')}
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;">
+            ${colorPalette.map(c => `<div onclick="applyStudioColor('${c.hex}')" style="width:36px;height:36px;border-radius:50%;background:${c.hex};cursor:pointer;border:2px solid ${design.colors[selectedPart] === c.hex ? 'var(--accent)' : 'var(--stone-700)'};transition:all 0.15s;" title="${c.name}"></div>`).join('')}
+          </div>`;
+      } else if (activeTool === 'decor') {
+        panel.innerHTML = `
+          <h4 style="color:white;margin-bottom:12px;">Add Decorations</h4>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:20px;">
+            ${decorations.map(d => `<div class="studio-panel" style="padding:12px;cursor:pointer;text-align:center;" onclick="addStudioDeco('${d.id}')">
+              <div style="font-size:1.5rem;">${d.glyph}</div>
+              <div style="font-size:0.7rem;color:var(--stone-400);margin-top:4px;">${d.name}</div>
+              <div style="font-size:0.7rem;color:var(--accent);">+${bdt(d.price)}</div>
+            </div>`).join('')}
+          </div>
+          <h4 style="color:white;margin-bottom:8px;">Current (${design.decos.length})</h4>
+          ${design.decos.length === 0 ? '<p style="color:var(--stone-500);font-size:0.8125rem;">No decorations yet</p>' :
+            design.decos.map(d => {
+              const dec = getDecoration(d.id);
+              return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px;margin-bottom:4px;background:var(--stone-800);border-radius:8px;">
+                <span style="color:var(--stone-300);font-size:0.8125rem;">${dec ? dec.glyph + ' ' + dec.name : d.id}</span>
+                <button class="btn btn-icon sm" style="color:var(--stone-400);background:none;border:none;" onclick="removeStudioDeco('${d.uid}')">✕</button>
+              </div>`;
+            }).join('')}`;
+      } else {
+        // Select tool — show layers
+        const layerNames = ['sole','upper','toe','heel','stripe','laces'];
+        panel.innerHTML = `
+          <h4 style="color:white;margin-bottom:12px;">Layers</h4>
+          ${layerNames.map(l => `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px;margin-bottom:4px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="width:12px;height:12px;border-radius:50%;background:${design.colors[l]||'#ccc'};border:1px solid var(--stone-600);"></span>
+              <span style="color:var(--stone-300);font-size:0.875rem;">${l}</span>
+            </div>
+            <button class="btn btn-icon sm" style="background:none;border:none;color:${design.hidden[l] ? 'var(--stone-600)' : 'var(--stone-300)'};" onclick="toggleStudioLayer('${l}')">
+              ${design.hidden[l] ? icons.eyeOff : icons.eye}
+            </button>
+          </div>`).join('')}
+          <div class="divider" style="background:var(--stone-700);"></div>
+          <h4 style="color:white;margin-bottom:8px;">Design Summary</h4>
+          <div style="font-size:0.8125rem;color:var(--stone-400);">
+            ${design.shoeId ? '<p>Shoe: ' + (getShoe(design.shoeId)||{}).name + '</p>' : ''}
+            ${design.materialId ? '<p>Material: ' + (getMaterial(design.materialId)||{}).name + '</p>' : ''}
+            ${design.soleId ? '<p>Sole: ' + (getSole(design.soleId)||{}).name + '</p>' : ''}
+            <p>Decorations: ${design.decos.length}</p>
+            <p style="color:var(--accent);font-weight:600;margin-top:8px;">Total: ${bdt(calculatePrice())}</p>
+          </div>`;
+      }
+    }
+
+    function applyStudioColor(hex) {
+      setColor(selectedPart, hex);
+      pushHistory(); renderAll();
+    }
+
+    function addStudioDeco(id) {
+      addDecoration(id);
+      pushHistory(); renderAll();
+      showToast(getDecoration(id).name + ' added', 'success');
+    }
+
+    function removeStudioDeco(uid) {
+      removeDecoration(uid);
+      pushHistory(); renderAll();
+    }
+
+    function toggleStudioLayer(name) {
+      toggleLayer(name);
+      pushHistory(); renderAll();
+    }
+
+    function openSaveDialog() { document.getElementById('save-dialog').classList.add('open'); }
+    function closeSaveDialog() { document.getElementById('save-dialog').classList.remove('open'); }
+    function saveDesign() {
+      const name = document.getElementById('save-name').value || 'My Design';
+      saveCurrentDesign(name);
+      closeSaveDialog();
+      showToast('Design saved as "' + name + '"!', 'success');
+    }
+
+    function renderAll() { renderCanvas(); renderPanel(); }
+    renderAll();
+  </script>
+</body>
+</html>

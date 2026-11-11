@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}VAYELLE — Match It. Vibe It.{% endblock %}</title>
+  
+  <!-- VAYELLE Core Stylesheets -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
+  
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <!-- Header / Navbar -->
+  <header class="vayelle-header">
+    <div class="header-inner">
+      <a href="{{ url_for('main.index') }}" class="vayelle-logo">
+        VAYELLE<span style="color:var(--accent);font-size:0.5em;vertical-align:super;">●</span>
+      </a>
+
+      <!-- Desktop Navigation -->
+      <nav>
+        <ul class="nav-links">
+          <li><a href="{{ url_for('main.index') }}" class="{% if request.path == '/' %}active{% endif %}">Home</a></li>
+          <li><a href="/static/../pages/explore.html">Explore</a></li>
+          <li><a href="/static/../pages/studio.html">Design Studio</a></li>
+          <li><a href="/static/../pages/outfit-upload.html">AI Match</a></li>
+          <li><a href="/static/../pages/budget.html">Budget</a></li>
+          <li><a href="/static/../pages/community.html">Community</a></li>
+          {% if session.get('role') == 'manager' %}
+            <li>
+              <a href="{{ url_for('manager.dashboard') }}" class="{% if '/manager' in request.path %}active{% endif %}" style="color:var(--accent);font-weight:700;">
+                ★ Dashboard
+              </a>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+
+      <!-- Auth Actions -->
+      <div class="header-actions">
+        {% if session.get('user_id') %}
+          <!-- Authenticated State -->
+          <div style="display:flex;align-items:center;gap:12px;">
+            {% if session.get('role') == 'manager' %}
+              <a href="{{ url_for('manager.dashboard') }}" class="btn btn-accent btn-sm" style="font-size:0.75rem;padding:6px 14px;">
+                Manager Dashboard
+              </a>
+            {% endif %}
+            <span style="font-size:0.875rem;font-weight:600;color:var(--text-heading);">
+              {{ session.get('user_name', 'User') }}
+              <span class="badge {% if session.get('role') == 'manager' %}badge-accent{% else %}badge-default{% endif %}" style="font-size:0.65rem;margin-left:4px;">
+                {{ session.get('role')|capitalize }}
+              </span>
+            </span>
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline btn-sm" style="font-size:0.75rem;padding:6px 12px;">
+              Sign Out
+            </a>
+          </div>
+        {% else %}
+          <!-- Guest State -->
+          <a href="{{ url_for('auth.login') }}" class="btn btn-ghost btn-sm" style="font-size:0.875rem;">
+            Sign In
+          </a>
+          <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm" style="font-size:0.875rem;">
+            Register
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <!-- Flash Toast Notifications -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="toast-container" id="flask-toast-container">
+        {% for category, message in messages %}
+          <div class="toast {{ category }} fade-up" style="display:flex;justify-content:space-between;align-items:center;">
+            <span>{{ message }}</span>
+            <button onclick="this.parentElement.remove()" style="background:none;border:none;color:white;cursor:pointer;font-weight:bold;margin-left:12px;">✕</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Main Content -->
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="vayelle-footer">
+    <div class="footer-inner">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <h3>VAYELLE<span style="color:var(--accent);">●</span></h3>
+          <p>Your style. Your rules. Custom shoe design and AI-powered recommendation platform.</p>
+          <p style="margin-top:12px;font-size:0.75rem;color:var(--stone-500);">
+            CSE471 — System Analysis and Design<br>
+            Team 03, Lab Section 01 — Fall 2026<br>
+            Phase 1: Flask + MongoDB Engine
+          </p>
+        </div>
+        <div class="footer-col">
+          <h4>Platform</h4>
+          <ul>
+            <li><a href="{{ url_for('main.index') }}">Home</a></li>
+            <li><a href="/static/../pages/explore.html">Explore Shoes</a></li>
+            <li><a href="/static/../pages/budget.html">Budget Search</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Custom Studio</h4>
+          <ul>
+            <li><a href="/static/../pages/studio.html">Design Studio</a></li>
+            <li><a href="/static/../pages/colors.html">Color Explorer</a></li>
+            <li><a href="/static/../pages/community.html">Community Designs</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Account</h4>
+          <ul>
+            {% if session.get('user_id') %}
+              {% if session.get('role') == 'manager' %}
+                <li><a href="{{ url_for('manager.dashboard') }}">Manager Dashboard</a></li>
+                <li><a href="{{ url_for('manager.inventory') }}">Inventory Management</a></li>
+              {% endif %}
+              <li><a href="{{ url_for('auth.logout') }}">Sign Out</a></li>
+            {% else %}
+              <li><a href="{{ url_for('auth.login') }}">Sign In</a></li>
+              <li><a href="{{ url_for('auth.register') }}">Create Account</a></li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 VAYELLE. CSE471 Team 03. All rights reserved.</p>
+        <p>Dhaka, Bangladesh · Currency: BDT (৳)</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Core JavaScript Scripts -->
+  <script src="{{ url_for('static', filename='js/data.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/store.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/colors.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  
+  {% block scripts %}{% endblock %}
+</body>
+</html>

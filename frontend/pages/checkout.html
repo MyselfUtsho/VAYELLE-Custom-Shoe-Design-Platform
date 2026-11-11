@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Checkout — VAYELLE</title>
+  <link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/components.css"><link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main class="main-content">
+    <div class="section-container">
+      <div class="page-header" style="padding:0 0 24px;"><h1>Checkout</h1><p>Review your order and provide shipping information.</p></div>
+      <div class="two-col-layout sidebar-right" style="padding:0;">
+        <!-- Shipping Form -->
+        <div>
+          <div class="panel" style="margin-bottom:16px;">
+            <h3 style="margin-bottom:16px;">Shipping Information</h3>
+            <div class="form-group"><label class="form-label">Full Name</label><input type="text" class="form-input" id="ship-name" placeholder="Your full name" required></div>
+            <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="ship-email" placeholder="email@example.com" required></div>
+            <div class="form-group"><label class="form-label">Phone</label><input type="tel" class="form-input" id="ship-phone" placeholder="+880 1XXX-XXXXXX" required></div>
+            <div class="form-group"><label class="form-label">Address</label><textarea class="form-input" id="ship-address" rows="3" placeholder="Full delivery address" required></textarea></div>
+          </div>
+
+          <!-- Size -->
+          <div class="panel" style="margin-bottom:16px;">
+            <h3 style="margin-bottom:12px;">Shoe Size</h3>
+            <div id="size-display"></div>
+          </div>
+
+          <!-- Delivery -->
+          <div class="panel">
+            <h3 style="margin-bottom:12px;">Delivery Option</h3>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <label class="panel" style="cursor:pointer;display:flex;align-items:center;gap:12px;padding:16px;border:2px solid var(--accent);" id="delivery-standard">
+                <input type="radio" name="delivery" value="0" checked onchange="updateTotal()">
+                <div><strong>Standard Delivery</strong><br><span style="font-size:.8125rem;color:var(--text-muted);">Free · 5–7 business days</span></div>
+              </label>
+              <label class="panel" style="cursor:pointer;display:flex;align-items:center;gap:12px;padding:16px;" id="delivery-express">
+                <input type="radio" name="delivery" value="150" onchange="updateTotal()">
+                <div><strong>Express Delivery</strong><br><span style="font-size:.8125rem;color:var(--text-muted);">৳150 · 2–3 business days</span></div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div>
+          <div class="checkout-summary" style="position:sticky;top:100px;" id="order-summary"></div>
+          <div style="margin-top:16px;">
+            <button class="btn btn-accent btn-lg" style="width:100%;" onclick="placeOrder()">Place Order (Demo)</button>
+            <p style="font-size:.75rem;color:var(--text-muted);text-align:center;margin-top:8px;">⚠ This is a demonstration. No real payment is processed.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer id="site-footer"></footer>
+  <script src="../js/data.js"></script><script src="../js/store.js"></script><script src="../js/colors.js"></script><script src="../js/main.js"></script>
+  <script>
+    const d = getCurrentDesign();
+    const shoe = d.shoeId ? getShoe(d.shoeId) : null;
+    const mat = d.materialId ? getMaterial(d.materialId) : null;
+    const sol = d.soleId ? getSole(d.soleId) : null;
+
+    // Size display
+    const usualSize = getState().usualSize;
+    document.getElementById('size-display').innerHTML = usualSize
+      ? `<p>Your saved size: <strong>EU ${usualSize}</strong></p>`
+      : `<p style="color:var(--text-muted);">No size saved. <a href="size-guide.html" style="color:var(--accent);">Find your size →</a></p>`;
+
+    function updateTotal() {
+      const deliveryCost = parseInt(document.querySelector('input[name="delivery"]:checked').value) || 0;
+      const subtotal = calculatePrice();
+      const total = subtotal + deliveryCost;
+
+      document.getElementById('order-summary').innerHTML = `
+        <h3>Order Summary</h3>
+        ${shoe ? `<div style="display:flex;gap:12px;margin:16px 0;padding-bottom:16px;border-bottom:1px solid var(--stone-700);">
+          <div style="width:80px;height:60px;background:var(--stone-800);border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+            ${renderShoeArt({ colors: d.colors, soleId: d.soleId, materialId: d.materialId, width: 80 })}
+          </div>
+          <div><div style="color:white;font-weight:600;">${shoe.name}</div><div style="font-size:.75rem;color:var(--stone-400);">Custom Design</div></div>
+        </div>` : ''}
+        <div class="checkout-line"><span class="label">Base shoe</span><span class="value">${shoe ? bdt(shoe.price) : '—'}</span></div>
+        <div class="checkout-line"><span class="label">Material</span><span class="value">${mat ? bdt(mat.price) : '—'}</span></div>
+        <div class="checkout-line"><span class="label">Sole</span><span class="value">${sol ? (sol.price > 0 ? bdt(sol.price) : 'Free') : '—'}</span></div>
+        <div class="checkout-line"><span class="label">Decorations (${d.decos.length})</span><span class="value">${bdt(subtotal - (shoe?shoe.price:0) - (mat?mat.price:0) - (sol?sol.price:0))}</span></div>
+        <div class="checkout-line"><span class="label">Delivery</span><span class="value">${deliveryCost > 0 ? bdt(deliveryCost) : 'Free'}</span></div>
+        <div class="checkout-total"><span>Total</span><span>${bdt(total)}</span></div>`;
+    }
+
+    function placeOrder() {
+      const name = document.getElementById('ship-name').value.trim();
+      const email = document.getElementById('ship-email').value.trim();
+      const phone = document.getElementById('ship-phone').value.trim();
+      const address = document.getElementById('ship-address').value.trim();
+
+      if (!name || !email || !phone || !address) {
+        showToast('Please fill in all shipping fields.', 'error');
+        return;
+      }
+
+      const deliveryCost = parseInt(document.querySelector('input[name="delivery"]:checked').value) || 0;
+      const order = {
+        id: 'ORD-' + Date.now(),
+        date: new Date().toISOString(),
+        shoeId: d.shoeId,
+        materialId: d.materialId,
+        soleId: d.soleId,
+        decos: [...d.decos],
+        colors: { ...d.colors },
+        total: calculatePrice() + deliveryCost,
+        shipping: { name, email, phone, address },
+        status: 'completed'
+      };
+
+      addOrder(order);
+      sessionStorage.setItem('lastOrderId', order.id);
+      window.location.href = 'payment-success.html';
+    }
+
+    updateTotal();
+  </script>
+</body>
+</html>

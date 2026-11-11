@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Color Exploration — VAYELLE</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main class="main-content studio-theme">
+    <div class="section-container">
+      <div class="page-header" style="padding:0 0 24px;"><p class="eyebrow">Color Studio</p><h1>Color Exploration</h1><p style="color:var(--stone-400);">Explore colors and find the perfect palette for your shoe design.</p></div>
+
+      <!-- Filter chips -->
+      <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;" id="color-group-filters">
+        <button class="chip active" onclick="filterGroup('All',this)">All</button>
+        <button class="chip" onclick="filterGroup('Neutrals',this)">Neutrals</button>
+        <button class="chip" onclick="filterGroup('Warm',this)">Warm</button>
+        <button class="chip" onclick="filterGroup('Cool',this)">Cool</button>
+        <button class="chip" onclick="filterGroup('Earth',this)">Earth</button>
+        <button class="chip" onclick="filterGroup('Bold',this)">Bold</button>
+      </div>
+
+      <div class="two-col-layout" style="padding:0;">
+        <!-- Color Swatches Grid -->
+        <div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;" id="swatch-grid"></div>
+        </div>
+
+        <!-- Preview & Harmony Panel -->
+        <div>
+          <div class="studio-panel" style="padding:24px;margin-bottom:24px;">
+            <h3 style="margin-bottom:16px;">Preview</h3>
+            <div id="color-preview-art" style="margin-bottom:16px;"></div>
+            <!-- Part selector -->
+            <h4 style="margin-bottom:8px;font-size:0.875rem;">Apply to part:</h4>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;" id="part-chips"></div>
+            <button class="btn btn-accent" style="width:100%;" id="apply-btn" onclick="applyColor()" disabled>Apply Color</button>
+          </div>
+
+          <!-- Color Harmony -->
+          <div class="studio-panel" style="padding:24px;" id="harmony-panel" style="display:none;">
+            <h3 style="margin-bottom:16px;">Color Harmony</h3>
+            <div id="harmony-content"><p style="color:var(--stone-400);">Select a color to see harmonies.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:32px;text-align:center;">
+        <a href="studio.html" class="btn btn-accent btn-lg">Open Design Studio</a>
+        <a href="accessible.html" class="btn btn-outline btn-lg" style="margin-left:12px;">Accessible Palette</a>
+      </div>
+    </div>
+  </main>
+  <footer id="site-footer"></footer>
+  <script src="../js/data.js"></script>
+  <script src="../js/store.js"></script>
+  <script src="../js/colors.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    let activeGroup = 'All';
+    let selectedHex = null;
+    let selectedPart = 'upper';
+    const parts = ['upper','toe','heel','stripe','laces','sole'];
+
+    function filterGroup(group, btn) {
+      activeGroup = group;
+      document.querySelectorAll('#color-group-filters .chip').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      renderSwatches();
+    }
+
+    function renderSwatches() {
+      const filtered = activeGroup === 'All' ? colorPalette : colorPalette.filter(c => c.group === activeGroup);
+      document.getElementById('swatch-grid').innerHTML = filtered.map(c => {
+        const sel = selectedHex === c.hex;
+        const textCol = isLightColor(c.hex) ? 'var(--stone-900)' : 'white';
+        return `<div onclick="selectColor('${c.hex}')" style="cursor:pointer;text-align:center;">
+          <div style="width:56px;height:56px;border-radius:50%;background:${c.hex};margin:0 auto 8px;border:3px solid ${sel ? 'var(--accent)' : 'var(--stone-700)'};box-shadow:${sel ? '0 0 0 3px rgba(249,115,22,0.3)' : 'none'};transition:all 0.2s;"></div>
+          <div style="font-size:0.75rem;color:var(--stone-300);">${c.name}</div>
+          <div style="font-size:0.625rem;color:var(--stone-500);">${c.hex}</div>
+        </div>`;
+      }).join('');
+    }
+
+    function selectColor(hex) {
+      selectedHex = hex;
+      document.getElementById('apply-btn').disabled = false;
+      renderSwatches();
+      renderHarmony();
+    }
+
+    function renderHarmony() {
+      if (!selectedHex) return;
+      const comp = getComplementary(selectedHex);
+      const ana = getAnalogous(selectedHex);
+      const tri = getTriadic(selectedHex);
+      const swatch = (c) => `<span style="display:inline-block;width:32px;height:32px;border-radius:50%;background:${c};border:2px solid var(--stone-600);margin-right:6px;" title="${c}"></span>`;
+
+      document.getElementById('harmony-content').innerHTML = `
+        <div style="margin-bottom:16px;"><strong style="color:var(--stone-300);">Selected:</strong> ${swatch(selectedHex)}<span style="color:var(--stone-400);">${selectedHex}</span></div>
+        <div style="margin-bottom:12px;"><strong style="color:var(--stone-300);">Complementary:</strong> ${swatch(comp)}</div>
+        <div style="margin-bottom:12px;"><strong style="color:var(--stone-300);">Analogous:</strong> ${ana.map(swatch).join('')}</div>
+        <div><strong style="color:var(--stone-300);">Triadic:</strong> ${tri.map(swatch).join('')}</div>
+      `;
+    }
+
+    function renderParts() {
+      document.getElementById('part-chips').innerHTML = parts.map(p => {
+        const design = getCurrentDesign();
+        return `<button class="chip ${selectedPart === p ? 'active' : ''}" onclick="selectedPart='${p}';renderParts();" style="gap:4px;">
+          <span style="width:12px;height:12px;border-radius:50%;background:${design.colors[p] || '#ccc'};display:inline-block;border:1px solid var(--stone-600);"></span>${p}
+        </button>`;
+      }).join('');
+    }
+
+    function applyColor() {
+      if (!selectedHex) return;
+      setColor(selectedPart, selectedHex);
+      showToast(`Applied ${selectedHex} to ${selectedPart}`, 'success');
+      renderPreview();
+      renderParts();
+    }
+
+    function renderPreview() {
+      const design = getCurrentDesign();
+      document.getElementById('color-preview-art').innerHTML = renderShoeArt({
+        colors: design.colors, soleId: design.soleId, materialId: design.materialId, decos: design.decos, width: 320
+      });
+    }
+
+    renderSwatches();
+    renderParts();
+    renderPreview();
+  </script>
+</body>
+</html>

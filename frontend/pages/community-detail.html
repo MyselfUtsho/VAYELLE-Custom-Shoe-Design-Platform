@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Community Design Detail — VAYELLE</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main class="main-content">
+    <div class="section-container" id="detail-container"></div>
+  </main>
+  <footer id="site-footer"></footer>
+
+  <script src="../js/data.js"></script>
+  <script src="../js/store.js"></script>
+  <script src="../js/colors.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    const designId = getQueryParam('id') || 'dhaka-dusk';
+    const design = communityDesigns.find(d => d.id === designId) || communityDesigns[0];
+
+    function renderDetail() {
+      const container = document.getElementById('detail-container');
+      const shoeObj = getShoe(design.shoe);
+      const matObj = getMaterial(design.material);
+      const soleObj = getSole(design.sole);
+      const isUserLiked = isLiked(design.id);
+      const totalLikes = design.likes + (isUserLiked ? 1 : 0);
+      const decosData = (design.decos || []).map((id, idx) => ({ uid: 'c_' + idx, id: id, x: 50, y: 40, scale: 1 }));
+
+      let estPrice = (shoeObj ? shoeObj.price : 2500) + (matObj ? matObj.price : 0) + (soleObj ? soleObj.price : 0);
+      (design.decos || []).forEach(did => {
+        const dec = getDecoration(did);
+        if (dec) estPrice += dec.price;
+      });
+
+      const parts = ['upper', 'toe', 'heel', 'stripe', 'laces', 'sole'];
+
+      container.innerHTML = `
+        <nav class="breadcrumb-nav">
+          <a href="../index.html">Home</a><span class="separator">/</span>
+          <a href="community.html">Community</a><span class="separator">/</span>
+          <span>${design.name}</span>
+        </nav>
+
+        <div class="two-col-layout" style="padding:0;margin-top:16px;">
+          <!-- Left: Big Art Canvas -->
+          <div>
+            <div class="panel" style="background:var(--stone-100);display:flex;align-items:center;justify-content:center;padding:48px;border-radius:var(--radius-2xl);">
+              ${renderShoeArt({ colors: design.colors, soleId: design.sole, materialId: design.material, decos: decosData, width: 440 })}
+            </div>
+            <div style="margin-top:20px;display:flex;justify-content:space-between;align-items:center;">
+              <span class="badge badge-accent">Original Creator: ${design.creator}</span>
+              <button class="btn btn-outline btn-sm" onclick="toggleDetailLike()">
+                ${isUserLiked ? icons.heartFilled : icons.heart} ${totalLikes} Likes
+              </button>
+            </div>
+          </div>
+
+          <!-- Right: Metadata & Remix Call to Action -->
+          <div>
+            <p class="eyebrow">Community Showcase</p>
+            <h1 style="margin-bottom:8px;">${design.name}</h1>
+            <p style="color:var(--text-muted);font-size:0.9375rem;margin-bottom:24px;">Designed by <strong>${design.creator}</strong>. Powered by the VAYELLE community creative studio.</p>
+
+            <div class="panel" style="margin-bottom:24px;">
+              <h4 style="margin-bottom:12px;">Component Architecture</h4>
+              <div class="checkout-line"><span class="label">Base Silhouette:</span><span class="value">${shoeObj ? shoeObj.name : 'Custom'}</span></div>
+              <div class="checkout-line"><span class="label">Material Finish:</span><span class="value">${matObj ? matObj.name : 'Standard'}</span></div>
+              <div class="checkout-line"><span class="label">Sole Platform:</span><span class="value">${soleObj ? soleObj.name : 'Flat'}</span></div>
+              <div class="checkout-line"><span class="label">Decorations:</span><span class="value">${(design.decos && design.decos.length > 0) ? design.decos.map(id => (getDecoration(id)||{}).name).join(', ') : 'None'}</span></div>
+              <div class="checkout-total" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border-color);">
+                <span>Estimated Build Cost:</span>
+                <span style="color:var(--accent);">${bdt(estPrice)}</span>
+              </div>
+            </div>
+
+            <!-- Colors breakdown -->
+            <div class="panel" style="margin-bottom:28px;">
+              <h4 style="margin-bottom:12px;">Color Placement</h4>
+              <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:10px;">
+                ${parts.map(p => `
+                  <div style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;">
+                    <span style="width:20px;height:20px;border-radius:50%;background:${design.colors[p] || '#ccc'};border:1px solid var(--border-color);"></span>
+                    <span style="text-transform:capitalize;color:var(--text-body);">${p}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+              <a href="remix.html?id=${design.id}" class="btn btn-accent btn-lg" style="flex:1;min-width:200px;">Remix This Design</a>
+              <button class="btn btn-outline btn-lg" onclick="loadToStudio()">Load in Studio</button>
+            </div>
+            <div style="margin-top:16px;">
+              <a href="community.html" style="color:var(--text-muted);font-size:0.875rem;">← Back to Community Gallery</a>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function toggleDetailLike() {
+      toggleLike(design.id);
+      renderDetail();
+      showToast(isLiked(design.id) ? 'Liked!' : 'Unliked', 'default');
+    }
+
+    function loadToStudio() {
+      selectShoe(design.shoe);
+      selectMaterial(design.material);
+      selectSole(design.sole);
+      updateDesign({
+        colors: { ...design.colors },
+        decos: (design.decos || []).map((id, idx) => ({ uid: 'c_' + idx, id: id, x: 50, y: 40, scale: 1 }))
+      });
+      showToast('Loaded into studio!', 'success');
+      setTimeout(() => { window.location.href = 'studio.html'; }, 500);
+    }
+
+    renderDetail();
+  </script>
+</body>
+</html>

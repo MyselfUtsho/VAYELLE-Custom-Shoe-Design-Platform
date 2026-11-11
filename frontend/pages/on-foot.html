@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>On-Foot Preview — VAYELLE</title>
+  <link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/components.css"><link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main class="main-content">
+    <div class="section-container">
+      <div class="page-header" style="padding:0 0 24px;"><p class="eyebrow">Preview</p><h1>On-Foot Preview</h1><p>See how your design looks in a real-world setting.</p></div>
+      <div class="two-col-layout" style="padding:0;">
+        <div>
+          <div style="position:relative;border-radius:var(--radius-2xl);overflow:hidden;" id="scene-container">
+            <img id="scene-img" src="../assets/images/hero.jpg" alt="Scene" style="width:100%;display:block;">
+            <div style="position:absolute;bottom:0;left:0;right:0;backdrop-filter:blur(12px);background:rgba(255,255,255,0.15);padding:20px;display:flex;justify-content:center;" id="shoe-overlay"></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <button class="chip active" id="scene-street" onclick="setScene('street')">Street</button>
+            <button class="chip" id="scene-studio" onclick="setScene('studio')">Studio</button>
+          </div>
+        </div>
+        <div>
+          <div class="panel">
+            <h3 style="margin-bottom:16px;">Preview Scale</h3>
+            <input type="range" class="range-slider" min="25" max="70" value="45" id="scale-slider" oninput="updateScale()">
+            <p style="font-size:0.8125rem;color:var(--text-muted);margin-top:8px;" id="scale-label">45%</p>
+            <div class="divider"></div>
+            <h3 style="margin-bottom:8px;">Design Summary</h3>
+            <div id="onfoot-summary" style="font-size:0.875rem;color:var(--text-body);"></div>
+            <div class="divider"></div>
+            <p style="font-size:0.8125rem;color:var(--text-muted);">⚠ AR try-on is planned for a future release.</p>
+          </div>
+          <div style="margin-top:16px;display:flex;gap:8px;">
+            <a href="price.html" class="btn btn-accent">Calculate Price →</a>
+            <a href="viewer.html" class="btn btn-outline">3D Viewer</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer id="site-footer"></footer>
+  <script src="../js/data.js"></script><script src="../js/store.js"></script><script src="../js/colors.js"></script><script src="../js/main.js"></script>
+  <script>
+    function setScene(s) {
+      document.getElementById('scene-img').src = s === 'street' ? '../assets/images/hero.jpg' : '../assets/images/outfit.jpg';
+      document.getElementById('scene-street').classList.toggle('active', s === 'street');
+      document.getElementById('scene-studio').classList.toggle('active', s === 'studio');
+    }
+    function updateScale() {
+      const v = document.getElementById('scale-slider').value;
+      document.getElementById('scale-label').textContent = v + '%';
+      renderOverlay();
+    }
+    function renderOverlay() {
+      const design = getCurrentDesign();
+      const scale = document.getElementById('scale-slider').value;
+      document.getElementById('shoe-overlay').innerHTML = `<div style="width:${scale}%;">${renderShoeArt({ colors:design.colors, soleId:design.soleId, materialId:design.materialId, decos:design.decos, width:300 })}</div>`;
+    }
+    function renderSummary() {
+      const d = getCurrentDesign();
+      const shoe = d.shoeId ? getShoe(d.shoeId) : null;
+      const mat = d.materialId ? getMaterial(d.materialId) : null;
+      document.getElementById('onfoot-summary').innerHTML = `<p>Shoe: ${shoe?shoe.name:'—'}</p><p>Material: ${mat?mat.name:'—'}</p><p style="font-weight:700;color:var(--accent);margin-top:8px;">Est: ${bdt(calculatePrice())}</p>`;
+    }
+    renderOverlay(); renderSummary();
+  </script>
+</body>
+</html>

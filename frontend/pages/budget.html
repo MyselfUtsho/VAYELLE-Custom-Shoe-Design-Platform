@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Budget Search — VAYELLE</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main class="main-content">
+    <div class="section-container">
+      <div class="page-header" style="padding:0 0 24px;"><p class="eyebrow">Budget</p><h1>Budget Search</h1><p>Find shoes that match your price range.</p></div>
+      <div class="two-col-layout sidebar-left" style="padding:0;">
+        <!-- Sidebar -->
+        <div>
+          <div class="design-summary">
+            <h3>Set Your Budget</h3>
+            <div class="form-group">
+              <label class="form-label">Min Budget (৳)</label>
+              <input type="number" class="form-input" id="min-budget" value="500" min="500" max="10000" step="100" oninput="filterByBudget()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Max Budget (৳)</label>
+              <input type="number" class="form-input" id="max-budget" value="10000" min="500" max="10000" step="100" oninput="filterByBudget()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Price Range</label>
+              <input type="range" class="range-slider" id="range-slider" min="500" max="10000" step="100" value="10000" oninput="document.getElementById('max-budget').value=this.value;filterByBudget()">
+            </div>
+            <button class="btn btn-accent" style="width:100%;margin-bottom:16px;" onclick="filterByBudget()">Search</button>
+            <h4 style="font-size:0.8125rem;margin-bottom:8px;">Quick Ranges</h4>
+            <div style="display:flex;flex-direction:column;gap:6px;" id="quick-ranges">
+              <button class="chip" onclick="quickRange(500,2000)">Under ৳2,000</button>
+              <button class="chip" onclick="quickRange(2000,3000)">৳2,000 — ৳3,000</button>
+              <button class="chip" onclick="quickRange(3000,5000)">৳3,000 — ৳5,000</button>
+              <button class="chip" onclick="quickRange(5000,10000)">Over ৳5,000</button>
+            </div>
+            <div class="divider"></div>
+            <a href="price.html" class="btn btn-outline btn-sm" style="width:100%;margin-bottom:8px;">Price Calculator</a>
+            <a href="material-recommendations.html" class="btn btn-outline btn-sm" style="width:100%;">Material Recommendations</a>
+          </div>
+        </div>
+        <!-- Results -->
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div id="budget-count"></div>
+            <select class="form-select" id="budget-sort" onchange="filterByBudget()" style="width:180px;">
+              <option value="price-asc">Price: Low → High</option>
+              <option value="price-desc">Price: High → Low</option>
+              <option value="name">Name: A → Z</option>
+            </select>
+          </div>
+          <div class="product-grid-3" id="budget-grid" style="grid-template-columns:repeat(2,1fr);"></div>
+          <div class="empty-state" id="budget-empty" style="display:none;">
+            <div style="font-size:3rem;">💰</div>
+            <h3>No shoes in this range</h3>
+            <p>Base prices range from ৳1,900 to ৳4,200. Try adjusting your budget.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer id="site-footer"></footer>
+  <script src="../js/data.js"></script>
+  <script src="../js/store.js"></script>
+  <script src="../js/colors.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    function quickRange(min, max) {
+      document.getElementById('min-budget').value = min;
+      document.getElementById('max-budget').value = max;
+      document.getElementById('range-slider').value = max;
+      filterByBudget();
+    }
+
+    function filterByBudget() {
+      const min = parseInt(document.getElementById('min-budget').value) || 500;
+      const max = parseInt(document.getElementById('max-budget').value) || 10000;
+      const sort = document.getElementById('budget-sort').value;
+
+      let filtered = shoes.filter(s => s.price >= min && s.price <= max);
+
+      if (sort === 'price-asc') filtered.sort((a, b) => a.price - b.price);
+      else if (sort === 'price-desc') filtered.sort((a, b) => b.price - a.price);
+      else if (sort === 'name') filtered.sort((a, b) => a.name.localeCompare(b.name));
+
+      document.getElementById('budget-count').innerHTML = `<span class="badge badge-default">${filtered.length} match${filtered.length !== 1 ? 'es' : ''}</span>`;
+
+      document.getElementById('budget-grid').innerHTML = filtered.map(s => {
+        const underBudget = max > 0 ? Math.round(((max - s.price) / max) * 100) : 0;
+        return `<div style="position:relative;">${renderProductCard(s, '../')}
+          ${underBudget > 0 ? `<span class="badge badge-success" style="position:absolute;top:48px;left:12px;">${underBudget}% under budget</span>` : ''}
+        </div>`;
+      }).join('');
+
+      document.getElementById('budget-grid').style.display = filtered.length ? '' : 'none';
+      document.getElementById('budget-empty').style.display = filtered.length ? 'none' : '';
+    }
+
+    filterByBudget();
+  </script>
+</body>
+</html>

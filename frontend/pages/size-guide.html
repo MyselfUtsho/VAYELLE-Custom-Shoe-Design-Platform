@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Size Guide — VAYELLE</title>
+  <link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/components.css"><link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main class="main-content">
+    <div class="section-container">
+      <div class="page-header" style="padding:0 0 24px;"><p class="eyebrow">Fit</p><h1>Shoe Size Guide</h1><p>Find your perfect size using foot length measurement.</p></div>
+      <div class="two-col-layout" style="padding:0;">
+        <!-- Size Finder -->
+        <div>
+          <div class="panel" style="margin-bottom:24px;">
+            <h3 style="margin-bottom:16px;">Find Your Size</h3>
+            <div class="form-group">
+              <label class="form-label">Foot Length (cm)</label>
+              <input type="number" class="form-input" id="foot-length" min="20" max="32" step="0.5" placeholder="e.g. 26" oninput="findSize()">
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:16px;">
+              <button class="chip active" id="region-eu" onclick="setRegion('eu')">EU</button>
+              <button class="chip" id="region-uk" onclick="setRegion('uk')">UK</button>
+              <button class="chip" id="region-us" onclick="setRegion('us')">US</button>
+            </div>
+            <div id="size-result" style="display:none;" class="panel" style="background:var(--orange-50);"></div>
+            <div id="save-size-section" style="display:none;margin-top:12px;"></div>
+          </div>
+
+          <!-- How to Measure -->
+          <div class="panel">
+            <h4 style="margin-bottom:12px;">📏 How to Measure Your Foot</h4>
+            <ol style="padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:.875rem;color:var(--text-body);">
+              <li>Place a piece of paper on a hard floor against a wall.</li>
+              <li>Stand on the paper with your heel against the wall.</li>
+              <li>Mark the longest point of your foot on the paper.</li>
+              <li>Measure the distance from the edge of the paper to the mark in centimeters.</li>
+              <li>Use that measurement in the calculator above.</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- Size Chart Table -->
+        <div>
+          <div class="size-table-wrapper">
+            <table class="size-table" id="size-table">
+              <thead><tr><th>EU</th><th>UK</th><th>US</th><th>Foot Length (cm)</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div style="margin-top:16px;text-align:center;">
+            <a href="checkout.html" class="btn btn-accent">Proceed to Checkout →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer id="site-footer"></footer>
+  <script src="../js/data.js"></script><script src="../js/store.js"></script><script src="../js/colors.js"></script><script src="../js/main.js"></script>
+  <script>
+    let activeRegion = 'eu';
+    let foundSize = null;
+
+    function setRegion(r) {
+      activeRegion = r;
+      ['eu','uk','us'].forEach(x => document.getElementById('region-'+x).classList.toggle('active', x===r));
+      if (foundSize) showResult();
+    }
+
+    function findSize() {
+      const cm = parseFloat(document.getElementById('foot-length').value);
+      if (!cm || cm < 20 || cm > 32) { document.getElementById('size-result').style.display = 'none'; return; }
+      foundSize = estimateSize(cm);
+      showResult();
+      highlightRow();
+    }
+
+    function showResult() {
+      if (!foundSize) return;
+      const display = activeRegion === 'eu' ? 'EU '+foundSize.eu : activeRegion === 'uk' ? 'UK '+foundSize.uk : 'US '+foundSize.us;
+      const resultEl = document.getElementById('size-result');
+      resultEl.style.display = '';
+      resultEl.innerHTML = `
+        <div style="background:var(--orange-50);border-radius:var(--radius-lg);padding:16px;text-align:center;">
+          <p style="color:var(--text-muted);font-size:.875rem;">Your estimated size</p>
+          <p style="font-size:2rem;font-weight:800;color:var(--accent);">${display}</p>
+          <p style="font-size:.8125rem;color:var(--text-muted);">EU ${foundSize.eu} · UK ${foundSize.uk} · US ${foundSize.us}</p>
+        </div>`;
+
+      const usualSize = getState().usualSize;
+      document.getElementById('save-size-section').style.display = '';
+      document.getElementById('save-size-section').innerHTML = `
+        ${usualSize ? `<p style="font-size:.8125rem;color:var(--text-muted);">Your saved size: EU ${usualSize}</p>` : ''}
+        <button class="btn btn-outline btn-sm" style="width:100%;" onclick="setUsualSize(${foundSize.eu});showToast('Size saved!','success');findSize();">
+          ${usualSize ? 'Update' : 'Save as'} My Usual Size (EU ${foundSize.eu})
+        </button>`;
+    }
+
+    function renderTable() {
+      document.querySelector('#size-table tbody').innerHTML = sizeChart.map(r =>
+        `<tr id="row-eu-${r.eu}"><td>${r.eu}</td><td>${r.uk}</td><td>${r.us}</td><td>${r.cm} cm</td></tr>`
+      ).join('');
+    }
+
+    function highlightRow() {
+      document.querySelectorAll('#size-table tbody tr').forEach(tr => tr.classList.remove('highlight'));
+      if (foundSize) {
+        const row = document.getElementById('row-eu-' + foundSize.eu);
+        if (row) { row.classList.add('highlight'); row.scrollIntoView({ behavior:'smooth', block:'center' }); }
+      }
+    }
+
+    renderTable();
+  </script>
+</body>
+</html>

@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}VAYELLE — Match It. Vibe It.{% endblock %}
+
+{% block content %}
+<!-- HERO SECTION -->
+<section class="hero-section">
+  <div class="hero-inner">
+    <div class="hero-content">
+      <p class="eyebrow">match it. vibe it.</p>
+      <h1>Your style.<br>Your rules.<br>Your <span style="color:var(--accent)">VAYELLE</span>.</h1>
+      <div style="display:flex;gap:32px;margin-bottom:24px;">
+        <div><strong style="color:var(--text-heading);font-size:1.5rem;">6</strong><br><small style="color:var(--text-muted);">Silhouettes</small></div>
+        <div><strong style="color:var(--text-heading);font-size:1.5rem;">5</strong><br><small style="color:var(--text-muted);">Materials</small></div>
+        <div><strong style="color:var(--text-heading);font-size:1.5rem;">20+</strong><br><small style="color:var(--text-muted);">Colors</small></div>
+      </div>
+      <div class="hero-buttons">
+        <a href="/static/../pages/explore.html" class="btn btn-primary btn-lg">Explore Collection</a>
+        <a href="/static/../pages/studio.html" class="btn btn-outline btn-lg">Start Designing</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div style="position:relative;">
+        <img src="{{ url_for('static', filename='images/hero.jpg') }}" alt="VAYELLE Hero" style="border-radius:var(--radius-2xl);box-shadow:var(--shadow-lg);max-width:100%;animation:float 6s ease-in-out infinite;">
+        <div style="position:absolute;bottom:20px;right:20px;background:white;border-radius:var(--radius-lg);padding:12px 20px;box-shadow:var(--shadow-md);">
+          <div style="font-size:0.75rem;color:var(--text-muted);">Vibe Score</div>
+          <div style="font-size:1.5rem;font-weight:800;color:var(--accent);">94%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED COLLECTION (Live from MongoDB or Sample) -->
+<section class="popular-section">
+  <div class="section-header">
+    <p class="eyebrow">Curated</p>
+    <h2>Featured Collection</h2>
+    <p>Discover footwear silhouettes stored in our platform database.</p>
+  </div>
+
+  <div class="product-grid-3">
+    {% if shoes and shoes|length > 0 %}
+      {% for shoe in shoes[:3] %}
+        <div class="product-card" style="cursor:default;">
+          <img src="{{ shoe.image_url }}" alt="{{ shoe.shoe_name }}" class="product-card-image" onerror="this.src='/static/images/shoe-black-runner.jpg'">
+          <span class="product-card-badge">{{ shoe.category }}</span>
+          <div class="product-card-body">
+            <div class="product-card-name">{{ shoe.shoe_name }}</div>
+            <div class="product-card-desc">{{ shoe.description or 'Custom handcrafted sneaker silhouette.' }}</div>
+            <div class="product-card-footer">
+              <span class="badge badge-default">{{ shoe.gender }}</span>
+              <div class="product-card-price">{{ bdt(shoe.base_price) }}</div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="product-card" onclick="window.location.href='/static/../pages/shoe-details.html?id=urban-runner'">
+        <img src="{{ url_for('static', filename='images/shoe-black-runner.jpg') }}" alt="Urban Runner" class="product-card-image">
+        <span class="product-card-badge">Sneakers</span>
+        <div class="product-card-body">
+          <div class="product-card-name">Urban Runner</div>
+          <div class="product-card-desc">High-performance street runner with breathable mesh.</div>
+          <div class="product-card-footer">
+            <span class="badge badge-default">Unisex</span>
+            <div class="product-card-price">৳2,500</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="product-card" onclick="window.location.href='/static/../pages/shoe-details.html?id=cloud-street'">
+        <img src="{{ url_for('static', filename='images/shoe-white.jpg') }}" alt="Cloud Street" class="product-card-image">
+        <span class="product-card-badge">Sneakers</span>
+        <div class="product-card-body">
+          <div class="product-card-name">Cloud Street</div>
+          <div class="product-card-desc">Cloud-like cushioning with clean minimal aesthetics.</div>
+          <div class="product-card-footer">
+            <span class="badge badge-default">Unisex</span>
+            <div class="product-card-price">৳3,200</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="product-card" onclick="window.location.href='/static/../pages/shoe-details.html?id=mono-classic'">
+        <img src="{{ url_for('static', filename='images/shoe-black-beige.jpg') }}" alt="Mono Classic" class="product-card-image">
+        <span class="product-card-badge">Casual</span>
+        <div class="product-card-body">
+          <div class="product-card-name">Mono Classic</div>
+          <div class="product-card-desc">Timeless two-tone design blending refined streetwear.</div>
+          <div class="product-card-footer">
+            <span class="badge badge-default">Men</span>
+            <div class="product-card-price">৳2,800</div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- BROWSE BY CATEGORY -->
+<section class="section-container">
+  <div class="section-header"><p class="eyebrow">Browse</p><h2>Shop by Category</h2></div>
+  <div class="product-grid-3">
+    <a href="/static/../pages/category.html?cat=men" style="display:block;position:relative;border-radius:var(--radius-2xl);overflow:hidden;aspect-ratio:4/3;text-decoration:none;">
+      <img src="{{ url_for('static', filename='images/shoe-formal.jpg') }}" alt="Men's Collection" style="width:100%;height:100%;object-fit:cover;">
+      <div style="position:absolute;inset:0;background:linear-gradient(transparent 40%,rgba(0,0,0,0.6));display:flex;align-items:flex-end;padding:24px;">
+        <h3 style="color:white;font-size:1.25rem;">Men's Collection</h3>
+      </div>
+    </a>
+    <a href="/static/../pages/category.html?cat=women" style="display:block;position:relative;border-radius:var(--radius-2xl);overflow:hidden;aspect-ratio:4/3;text-decoration:none;">
+      <img src="{{ url_for('static', filename='images/shoe-retro.jpg') }}" alt="Women's Collection" style="width:100%;height:100%;object-fit:cover;">
+      <div style="position:absolute;inset:0;background:linear-gradient(transparent 40%,rgba(0,0,0,0.6));display:flex;align-items:flex-end;padding:24px;">
+        <h3 style="color:white;font-size:1.25rem;">Women's Collection</h3>
+      </div>
+    </a>
+    <a href="/static/../pages/category.html?cat=unisex" style="display:block;position:relative;border-radius:var(--radius-2xl);overflow:hidden;aspect-ratio:4/3;text-decoration:none;">
+      <img src="{{ url_for('static', filename='images/shoe-white.jpg') }}" alt="Unisex Collection" style="width:100%;height:100%;object-fit:cover;">
+      <div style="position:absolute;inset:0;background:linear-gradient(transparent 40%,rgba(0,0,0,0.6));display:flex;align-items:flex-end;padding:24px;">
+        <h3 style="color:white;font-size:1.25rem;">Unisex Collection</h3>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- HOW VAYELLE WORKS -->
+<section class="features-section" style="background:var(--stone-100);padding-top:64px;padding-bottom:64px;">
+  <div class="section-header"><p class="eyebrow">How it works</p><h2>Four Simple Steps</h2></div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div style="font-size:2rem;margin-bottom:12px;">👟</div>
+      <div class="eyebrow" style="margin-bottom:8px;">Step 1</div>
+      <h3>Pick a Base</h3>
+      <p>Choose from our curated collection of shoe silhouettes.</p>
+    </div>
+    <div class="feature-card">
+      <div style="font-size:2rem;margin-bottom:12px;">🎨</div>
+      <div class="eyebrow" style="margin-bottom:8px;">Step 2</div>
+      <h3>Customize</h3>
+      <p>Select materials, colors, and decorative elements.</p>
+    </div>
+    <div class="feature-card">
+      <div style="font-size:2rem;margin-bottom:12px;">✨</div>
+      <div class="eyebrow" style="margin-bottom:8px;">Step 3</div>
+      <h3>Match Your Fit</h3>
+      <p>Upload an outfit and get AI-powered recommendations.</p>
+    </div>
+    <div class="feature-card">
+      <div style="font-size:2rem;margin-bottom:12px;">📦</div>
+      <div class="eyebrow" style="margin-bottom:8px;">Step 4</div>
+      <h3>Order</h3>
+      <p>Review your design and place your custom order.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BANNER -->
+<section style="padding:48px 24px;">
+  <div class="cta-banner">
+    <h2>Ready to create?</h2>
+    <p style="font-size:1.125rem;">match it. vibe it.</p>
+    <a href="/static/../pages/explore.html" class="btn btn-white btn-lg" style="margin-top:8px;">Explore Collection</a>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,41 @@
+# Python virtual environments
+.venv/
+venv/
+env/
+ENV/
+.Python
+
+# Node dependencies
+node_modules/
+
+# Environment variables and secrets
+.env
+.env.*
+
+# Allow the example environment template
+!.env.example
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Testing and cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs
+*.log
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Lovable unfinished folders (Strictly excluded)
+lovable/
+lovable*/
+*lovable*

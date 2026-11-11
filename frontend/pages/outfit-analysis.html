@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Outfit Analysis — VAYELLE</title>
+  <link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/components.css"><link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main class="main-content">
+    <div class="section-container">
+      <div class="page-header" style="padding:0 0 24px;"><p class="eyebrow">AI Analysis</p><h1>Outfit Analysis Results</h1><p>Color extraction and style classification from your outfit.</p></div>
+      <div class="two-col-layout" style="padding:0;" id="analysis-page"></div>
+    </div>
+  </main>
+  <footer id="site-footer"></footer>
+  <script src="../js/data.js"></script><script src="../js/store.js"></script><script src="../js/colors.js"></script><script src="../js/main.js"></script>
+  <script>
+    const outfitSrc = getState().outfit || '../assets/images/outfit.jpg';
+    const fallbackColors = ['#D9C7A8','#3A3A3A','#6B6B3A','#F2EFE8','#8A8A8A'];
+
+    function renderAnalysis(dominantColors) {
+      const style = classifyStyle(dominantColors);
+      const recs = getShoeRecommendations(dominantColors);
+      const matchingShoes = shoes.filter(s => s.style === style.toLowerCase() || style === 'Casual');
+
+      document.getElementById('analysis-page').innerHTML = `
+        <!-- Outfit Image -->
+        <div>
+          <div style="border-radius:var(--radius-2xl);overflow:hidden;margin-bottom:16px;">
+            <img src="${outfitSrc}" alt="Your Outfit" style="width:100%;display:block;" id="outfit-img">
+          </div>
+          <a href="outfit-upload.html" class="btn btn-outline btn-sm">← Upload Different Outfit</a>
+        </div>
+        <!-- Analysis Results -->
+        <div>
+          <!-- Dominant Colors -->
+          <div class="panel" style="margin-bottom:16px;">
+            <h3 style="margin-bottom:12px;">Dominant Colors</h3>
+            <div style="display:flex;height:32px;border-radius:var(--radius-lg);overflow:hidden;margin-bottom:12px;">
+              ${dominantColors.map(c => `<div style="flex:1;background:${c};"></div>`).join('')}
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              ${dominantColors.map(c => `<span class="chip" style="gap:4px;"><span style="width:12px;height:12px;border-radius:50%;background:${c};display:inline-block;border:1px solid var(--border-color);"></span>${c}</span>`).join('')}
+            </div>
+          </div>
+
+          <!-- Style Classification -->
+          <div class="panel" style="margin-bottom:16px;">
+            <h3 style="margin-bottom:12px;">Style Classification</h3>
+            <div style="font-size:2rem;font-weight:800;color:var(--accent);margin-bottom:8px;">${style}</div>
+            <div style="display:flex;gap:16px;">
+              ${['Casual','Formal','Streetwear'].map(s => {
+                const pct = s === style ? 70 : (s === 'Casual' && style !== 'Casual' ? 20 : 10);
+                return `<div style="flex:1;"><div style="font-size:.75rem;color:var(--text-muted);margin-bottom:4px;">${s} ${pct}%</div>
+                <div class="proportion-bar"><div class="proportion-bar-fill" style="width:${pct}%;${s===style?'':'background:var(--stone-300);'}"></div></div></div>`;
+              }).join('')}
+            </div>
+          </div>
+
+          <!-- Recommended Shoe Colors -->
+          <div class="panel" style="margin-bottom:16px;">
+            <h3 style="margin-bottom:12px;">Recommended Shoe Colors</h3>
+            ${recs.map(r => `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+              <span style="font-size:.75rem;color:var(--text-muted);min-width:60px;">From ${r.outfitColor}:</span>
+              ${r.suggested.map(c => `<span style="width:28px;height:28px;border-radius:50%;background:${c};display:inline-block;border:2px solid var(--border-color);" title="${c}"></span>`).join('')}
+            </div>`).join('')}
+          </div>
+
+          <!-- Suggested Shoes -->
+          <div class="panel">
+            <h3 style="margin-bottom:12px;">Suggested Shoes</h3>
+            ${matchingShoes.length > 0 ?
+              `<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">${matchingShoes.slice(0,4).map(s => renderProductCard(s,'../')).join('')}</div>` :
+              '<p style="color:var(--text-muted);">No exact style matches. Try exploring all shoes.</p>'}
+          </div>
+
+          <a href="recommendations.html" class="btn btn-accent btn-lg" style="width:100%;margin-top:16px;">View Smart Recommendations →</a>
+        </div>`;
+    }
+
+    // Try to extract real dominant colors from the image
+    if (getState().outfit) {
+      extractDominantColors(outfitSrc, 5, renderAnalysis);
+    } else {
+      renderAnalysis(fallbackColors);
+    }
+  </script>
+</body>
+</html>

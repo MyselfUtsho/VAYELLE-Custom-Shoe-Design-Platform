@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sole Selection — VAYELLE</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main class="main-content">
+    <div class="section-container">
+      <div class="steps-bar">
+        <a href="explore.html" class="step-item completed"><span class="step-number">✓</span><span class="step-label">Shoe</span></a><div class="step-connector completed"></div>
+        <a href="materials.html" class="step-item completed"><span class="step-number">✓</span><span class="step-label">Material</span></a><div class="step-connector completed"></div>
+        <span class="step-item active"><span class="step-number">3</span><span class="step-label">Sole</span></span><div class="step-connector"></div>
+        <a href="decorations.html" class="step-item"><span class="step-number">4</span><span class="step-label">Decor</span></a><div class="step-connector"></div>
+        <a href="studio.html" class="step-item"><span class="step-number">5</span><span class="step-label">Studio</span></a>
+      </div>
+      <div class="page-header" style="padding:0 0 24px;"><h1>Choose Your Sole</h1><p>Select a sole type that matches your style and comfort needs.</p></div>
+      <div class="two-col-layout" style="padding:0;">
+        <div>
+          <div class="panel" style="padding:24px;">
+            <h3 style="margin-bottom:16px;">Preview</h3>
+            <div id="sole-preview"></div>
+          </div>
+        </div>
+        <div id="soles-list"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:32px;">
+        <a href="materials.html" class="btn btn-outline">← Back to Materials</a>
+        <a href="decorations.html" class="btn btn-accent btn-lg">Next: Add Decorations →</a>
+      </div>
+    </div>
+  </main>
+  <footer id="site-footer"></footer>
+  <script src="../js/data.js"></script>
+  <script src="../js/store.js"></script>
+  <script src="../js/colors.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    function renderSoles() {
+      const currentSole = getCurrentDesign().soleId;
+      const design = getCurrentDesign();
+      document.getElementById('sole-preview').innerHTML = renderShoeArt({ colors: design.colors, soleId: design.soleId || 'flat', materialId: design.materialId, decos: design.decos, width: 360 });
+
+      document.getElementById('soles-list').innerHTML = `<div style="display:flex;flex-direction:column;gap:12px;">${soles.map(s => `
+        <div class="panel" style="cursor:pointer;border:2px solid ${currentSole === s.id ? 'var(--accent)' : 'transparent'};padding:20px;display:flex;align-items:center;gap:16px;" onclick="chooseSole('${s.id}')">
+          <div style="width:60px;display:flex;flex-direction:column;align-items:center;">
+            <div style="width:48px;height:${s.height}px;background:var(--accent);border-radius:4px;transition:height 0.3s;"></div>
+            <span style="font-size:0.625rem;color:var(--text-muted);margin-top:4px;">${s.height}mm</span>
+          </div>
+          <div style="flex:1;">
+            <h4>${s.name}</h4>
+            <p style="font-size:0.8125rem;">${s.description}</p>
+          </div>
+          <div class="price-tag">${s.price > 0 ? '+' + bdt(s.price) : 'Free'}</div>
+        </div>
+      `).join('')}</div>`;
+    }
+
+    function chooseSole(id) {
+      selectSole(id);
+      showToast(getSole(id).name + ' selected!', 'success');
+      renderSoles();
+    }
+
+    renderSoles();
+  </script>
+</body>
+</html>

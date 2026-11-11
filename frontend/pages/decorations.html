@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Decorations — VAYELLE</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main class="main-content">
+    <div class="section-container">
+      <div class="steps-bar">
+        <a href="explore.html" class="step-item completed"><span class="step-number">✓</span><span class="step-label">Shoe</span></a><div class="step-connector completed"></div>
+        <a href="materials.html" class="step-item completed"><span class="step-number">✓</span><span class="step-label">Material</span></a><div class="step-connector completed"></div>
+        <a href="soles.html" class="step-item completed"><span class="step-number">✓</span><span class="step-label">Sole</span></a><div class="step-connector completed"></div>
+        <span class="step-item active"><span class="step-number">4</span><span class="step-label">Decor</span></span><div class="step-connector"></div>
+        <a href="studio.html" class="step-item"><span class="step-number">5</span><span class="step-label">Studio</span></a>
+      </div>
+      <div class="page-header" style="padding:0 0 24px;"><h1>Add Decorations</h1><p>Personalize your shoe with decorative elements.</p></div>
+
+      <!-- Filter chips -->
+      <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;" id="deco-filters">
+        <button class="chip active" onclick="filterDecos('All',this)">All</button>
+        <button class="chip" onclick="filterDecos('Stripes',this)">Stripes</button>
+        <button class="chip" onclick="filterDecos('Patterns',this)">Patterns</button>
+        <button class="chip" onclick="filterDecos('Patches',this)">Patches</button>
+        <button class="chip" onclick="filterDecos('Icons',this)">Icons</button>
+        <button class="chip" onclick="filterDecos('Geometric',this)">Geometric</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:32px;" class="selection-grid" id="deco-grid"></div>
+
+      <!-- Selected decorations -->
+      <div class="panel" style="margin-bottom:24px;">
+        <h3 style="margin-bottom:12px;">On Your Design</h3>
+        <div id="selected-decos"></div>
+        <div style="margin-top:12px;font-weight:700;" id="deco-total"></div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;">
+        <a href="soles.html" class="btn btn-outline">← Back to Soles</a>
+        <a href="studio.html" class="btn btn-accent btn-lg">Next: Open Studio →</a>
+      </div>
+    </div>
+  </main>
+  <footer id="site-footer"></footer>
+  <script src="../js/data.js"></script>
+  <script src="../js/store.js"></script>
+  <script src="../js/colors.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    let activeFilter = 'All';
+
+    function filterDecos(kind, btn) {
+      activeFilter = kind;
+      document.querySelectorAll('#deco-filters .chip').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      renderDecoGrid();
+    }
+
+    function renderDecoGrid() {
+      const filtered = activeFilter === 'All' ? decorations : decorations.filter(d => d.kind === activeFilter);
+      document.getElementById('deco-grid').innerHTML = filtered.map(d => `
+        <div class="panel" style="text-align:center;cursor:pointer;padding:16px;" onclick="addDeco('${d.id}')">
+          <div style="font-size:2.5rem;margin-bottom:8px;color:var(--accent);background:var(--stone-100);border-radius:var(--radius-lg);padding:16px;">${d.glyph}</div>
+          <h4 style="font-size:0.875rem;">${d.name}</h4>
+          <div style="font-size:0.75rem;color:var(--text-muted);">${d.kind}</div>
+          <div class="price-tag" style="margin-top:4px;">+${bdt(d.price)}</div>
+        </div>
+      `).join('');
+    }
+
+    function addDeco(id) {
+      addDecoration(id);
+      showToast(getDecoration(id).name + ' added!', 'success');
+      renderSelected();
+    }
+
+    function removeDeco(uid) {
+      removeDecoration(uid);
+      renderSelected();
+    }
+
+    function renderSelected() {
+      const design = getCurrentDesign();
+      if (design.decos.length === 0) {
+        document.getElementById('selected-decos').innerHTML = '<p style="color:var(--text-muted);">No decorations added yet.</p>';
+        document.getElementById('deco-total').textContent = '';
+        return;
+      }
+      let total = 0;
+      const uniqueIds = [...new Set(design.decos.map(d => d.id))];
+      uniqueIds.forEach(id => { const dec = getDecoration(id); if(dec) total += dec.price; });
+
+      document.getElementById('selected-decos').innerHTML = design.decos.map(d => {
+        const dec = getDecoration(d.id);
+        return `<span class="chip" style="margin:4px;">${dec ? dec.glyph : ''} ${dec ? dec.name : d.id} <button onclick="event.stopPropagation();removeDeco('${d.uid}')" style="background:none;border:none;cursor:pointer;color:var(--text-muted);margin-left:4px;">✕</button></span>`;
+      }).join('');
+
+      document.getElementById('deco-total').textContent = 'Decoration total: ' + bdt(total);
+    }
+
+    renderDecoGrid();
+    renderSelected();
+  </script>
+</body>
+</html>

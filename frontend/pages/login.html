@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — VAYELLE</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main class="main-content">
+    <div class="auth-form fade-up">
+      <div class="auth-header">
+        <a href="../index.html" class="vayelle-logo" style="font-size:2rem;">VAYELLE<span style="color:var(--accent);">●</span></a>
+        <h1 style="margin-top:12px;font-size:1.75rem;">Welcome Back</h1>
+        <p style="color:var(--text-muted);font-size:0.875rem;">Sign in to save custom shoes and access community showcase features.</p>
+      </div>
+
+      <div class="panel" style="padding:28px;">
+        <form id="login-form" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" class="form-input" id="login-email" placeholder="you@university.edu" required value="athoy.roy@vayelle.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-input" id="login-password" placeholder="••••••••" required value="student123">
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;font-size:0.8125rem;">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+              <input type="checkbox" checked> Remember me
+            </label>
+            <a href="#" style="color:var(--accent);" onclick="showToast('Password recovery demo simulated.', 'default'); return false;">Forgot password?</a>
+          </div>
+
+          <button type="submit" class="btn btn-accent btn-lg" style="width:100%;">Sign In</button>
+        </form>
+
+        <div class="auth-divider">DEMONSTRATION ACCESS</div>
+
+        <button class="btn btn-outline" style="width:100%;margin-bottom:12px;" onclick="quickDemoLogin('Student Designer', 'designer@bracu.ac.bd')">
+          Quick Sign In as Student Designer
+        </button>
+
+        <p style="text-align:center;font-size:0.8125rem;color:var(--text-muted);margin-top:16px;">
+          Don't have an account? <a href="register.html" style="color:var(--accent);font-weight:600;">Create one</a>
+        </p>
+      </div>
+
+      <p style="font-size:0.75rem;color:var(--text-muted);text-align:center;margin-top:16px;">
+        Frontend simulation only. No external auth servers contacted.
+      </p>
+    </div>
+  </main>
+  <footer id="site-footer"></footer>
+
+  <script src="../js/data.js"></script>
+  <script src="../js/store.js"></script>
+  <script src="../js/colors.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const name = email.split('@')[0].replace('.', ' ');
+      setUser({ name: name.charAt(0).toUpperCase() + name.slice(1), email: email });
+      showToast('Signed in successfully!', 'success');
+      setTimeout(() => { window.location.href = 'profile.html'; }, 500);
+    }
+
+    function quickDemoLogin(name, email) {
+      setUser({ name: name, email: email });
+      showToast('Signed in as ' + name + '!', 'success');
+      setTimeout(() => { window.location.href = 'profile.html'; }, 500);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In — VAYELLE{% endblock %}
+
+{% block content %}
+<div class="auth-form fade-up">
+  <div class="auth-header">
+    <a href="{{ url_for('main.index') }}" class="vayelle-logo" style="font-size:2rem;">
+      VAYELLE<span style="color:var(--accent);">●</span>
+    </a>
+    <h1 style="margin-top:12px;font-size:1.75rem;">Welcome Back</h1>
+    <p style="color:var(--text-muted);font-size:0.875rem;">
+      Sign in to access your VAYELLE account or Manager Dashboard.
+    </p>
+  </div>
+
+  <div class="panel" style="padding:28px;">
+    <form method="POST" action="{{ url_for('auth.login', next=request.args.get('next', '')) }}">
+      <div class="form-group">
+        <label class="form-label" for="login-email">Email Address</label>
+        <input 
+          type="email" 
+          class="form-input" 
+          id="login-email" 
+          name="email" 
+          placeholder="name@example.com" 
+          required 
+          value="{{ email or '' }}"
+          autocomplete="email"
+        >
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="login-password">Password</label>
+        <input 
+          type="password" 
+          class="form-input" 
+          id="login-password" 
+          name="password" 
+          placeholder="••••••••" 
+          required
+          autocomplete="current-password"
+        >
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;font-size:0.8125rem;">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="checkbox" name="remember" id="remember-me" checked> Remember session
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-accent btn-lg" style="width:100%;">
+        Sign In
+      </button>
+    </form>
+
+    <div class="auth-divider">DEMO PRESETS FOR TESTING</div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <button 
+        type="button" 
+        class="btn btn-outline btn-sm" 
+        style="width:100%;font-size:0.8125rem;" 
+        onclick="fillCredentials('manager@vayelle.com', 'ManagerPass123')"
+      >
+        Fill Manager Credentials (manager@vayelle.com)
+      </button>
+
+      <button 
+        type="button" 
+        class="btn btn-outline btn-sm" 
+        style="width:100%;font-size:0.8125rem;" 
+        onclick="fillCredentials('user@vayelle.com', 'UserPass123')"
+      >
+        Fill Regular User Credentials (user@vayelle.com)
+      </button>
+    </div>
+
+    <p style="text-align:center;font-size:0.8125rem;color:var(--text-muted);margin-top:20px;">
+      Don't have an account? <a href="{{ url_for('auth.register') }}" style="color:var(--accent);font-weight:600;">Create one here</a>
+    </p>
+  </div>
+</div>
+
+<script>
+  function fillCredentials(email, pass) {
+    document.getElementById('login-email').value = email;
+    document.getElementById('login-password').value = pass;
+  }
+</script>
+{% endblock %}

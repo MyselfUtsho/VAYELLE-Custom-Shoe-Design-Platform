@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order History — VAYELLE</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main class="main-content">
+    <div class="section-container">
+      <div class="page-header" style="padding:0 0 24px;">
+        <p class="eyebrow">Account</p>
+        <h1>Order History</h1>
+        <p>Review simulated sandbox orders and tracking summaries.</p>
+      </div>
+
+      <div id="orders-list"></div>
+
+      <div class="empty-state" id="orders-empty" style="display:none;">
+        <div style="font-size:3.5rem;margin-bottom:12px;">📦</div>
+        <h3>No orders placed yet</h3>
+        <p>Once you complete a design and walk through checkout, your simulated orders appear here.</p>
+        <div style="margin-top:20px;">
+          <a href="explore.html" class="btn btn-primary">Start Designing</a>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer id="site-footer"></footer>
+
+  <script src="../js/data.js"></script>
+  <script src="../js/store.js"></script>
+  <script src="../js/colors.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    function renderOrders() {
+      const orders = getState().orders;
+      const listEl = document.getElementById('orders-list');
+      const emptyEl = document.getElementById('orders-empty');
+
+      if (orders.length === 0) {
+        listEl.style.display = 'none';
+        emptyEl.style.display = 'block';
+        return;
+      }
+
+      listEl.style.display = 'block';
+      emptyEl.style.display = 'none';
+
+      listEl.innerHTML = orders.map(ord => {
+        const shoe = ord.shoeId ? getShoe(ord.shoeId) : null;
+        const mat = ord.materialId ? getMaterial(ord.materialId) : null;
+        const sole = ord.soleId ? getSole(ord.soleId) : null;
+
+        return `
+          <div class="panel" style="margin-bottom:20px;padding:24px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border-color);padding-bottom:14px;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
+              <div>
+                <strong style="font-size:1.125rem;">Order ${ord.id}</strong>
+                <div style="font-size:0.8125rem;color:var(--text-muted);">${formatDate(ord.date)}</div>
+              </div>
+              <div>
+                <span class="badge badge-success">Demo Payment Verified</span>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
+              <div style="width:140px;background:var(--stone-100);border-radius:var(--radius-lg);padding:10px;display:flex;align-items:center;justify-content:center;">
+                ${renderShoeArt({ colors: ord.colors || defaultColors, soleId: ord.soleId, materialId: ord.materialId, decos: ord.decos || [], width: 120 })}
+              </div>
+              <div style="flex:1;min-width:220px;">
+                <h4 style="margin-bottom:4px;">${shoe ? shoe.name : 'Custom VAYELLE Silhouette'}</h4>
+                <div style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:8px;">
+                  Material: ${mat ? mat.name : 'Standard'} · Sole: ${sole ? sole.name : 'Flat'}
+                </div>
+                <div style="font-size:0.8125rem;color:var(--text-body);">
+                  Shipping to: <strong>${ord.shipping ? ord.shipping.name : 'Customer'}</strong> (${ord.shipping ? ord.shipping.address : 'Dhaka'})
+                </div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:0.8125rem;color:var(--text-muted);">Total Paid</div>
+                <div style="font-size:1.5rem;font-weight:800;color:var(--accent);">${bdt(ord.total)}</div>
+                <a href="studio.html" class="btn btn-outline btn-sm" style="margin-top:8px;">Re-order / Customize</a>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    renderOrders();
+  </script>
+</body>
+</html>
