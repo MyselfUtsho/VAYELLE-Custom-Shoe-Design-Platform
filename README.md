@@ -11,8 +11,8 @@
 ## 🌐 Live Website
 
 > **Render Deployment:**  
-> 🔗 **Live Website URL:** [Deployment in Progress / Pending Configuration — See Section Below](#-online-deployment-guide-render)  
-> *The production Flask application is pre-configured with Gunicorn and MongoDB Atlas cloud database support.*
+> 🔗 **Live Website URL:** [https://vayelle-platform.onrender.com](https://vayelle-platform.onrender.com)  
+> *The production Flask application is hosted on Render in the Singapore region with Gunicorn and MongoDB Atlas cloud database connectivity.*
 
 ---
 
