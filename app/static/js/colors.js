@@ -159,6 +159,45 @@ function extractDominantColors(imgSrc, n, callback) {
   img.src = imgSrc;
 }
 
+// --- Get split-complementary colors (±150° on color wheel) ---
+function getSplitComplementary(hex) {
+  const rgb = hexToRgb(hex);
+  const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+
+  const c1 = hslToRgb((hsl.h + 150) % 360, hsl.s, hsl.l);
+  const c2 = hslToRgb((hsl.h + 210) % 360, hsl.s, hsl.l);
+
+  return [
+    rgbToHex(c1.r, c1.g, c1.b),
+    rgbToHex(c2.r, c2.g, c2.b)
+  ];
+}
+
+// --- WCAG 2.1 Relative Luminance & Contrast Calculation ---
+function getRelativeLuminance(rgb) {
+  const linearize = (c) => {
+    const val = c / 255;
+    return val <= 0.04045 ? val / 12.92 : Math.pow((val + 0.055) / 1.055, 2.4);
+  };
+  return 0.2126 * linearize(rgb.r) + 0.7152 * linearize(rgb.g) + 0.0722 * linearize(rgb.b);
+}
+
+function calculateWcagContrast(hex1, hex2) {
+  const rgb1 = hexToRgb(hex1);
+  const rgb2 = hexToRgb(hex2);
+  const lum1 = getRelativeLuminance(rgb1);
+  const lum2 = getRelativeLuminance(rgb2);
+  const lighter = Math.max(lum1, lum2);
+  const darker = Math.min(lum1, lum2);
+  const ratio = (lighter + 0.05) / (darker + 0.05);
+  return {
+    ratio: Math.round(ratio * 100) / 100,
+    wcagAANormal: ratio >= 4.5,
+    wcagAALarge: ratio >= 3.0,
+    wcagAAANormal: ratio >= 7.0
+  };
+}
+
 // --- Classify outfit style from dominant colors ---
 // Uses average saturation and luminance to determine style category
 function classifyStyle(hexColors) {

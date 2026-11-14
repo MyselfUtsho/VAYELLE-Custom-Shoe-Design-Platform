@@ -24,7 +24,9 @@
       <nav>
         <ul class="nav-links">
           <li><a href="{{ url_for('main.index') }}" class="{% if request.path == '/' %}active{% endif %}">Home</a></li>
-          <li><a href="/static/../pages/explore.html">Explore</a></li>
+          <li><a href="{{ url_for('colors.choose_design') }}" class="{% if '/choose-design' in request.path %}active{% endif %}" style="font-weight:700; color:var(--accent);">Choose Your Design</a></li>
+          <li><a href="{{ url_for('colors.color_studio') }}" class="{% if '/colors' in request.path %}active{% endif %}">Color Studio</a></li>
+          <li><a href="{{ url_for('main.explore') }}" class="{% if request.path == '/explore' %}active{% endif %}">Explore</a></li>
           <li><a href="/static/../pages/studio.html">Design Studio</a></li>
           <li><a href="/static/../pages/outfit-upload.html">AI Match</a></li>
           <li><a href="/static/../pages/budget.html">Budget</a></li>
