@@ -10,6 +10,11 @@ class Config:
     DB_NAME = os.getenv('DB_NAME', 'vayelle_db')
     DEBUG = os.getenv('FLASK_DEBUG', '1') == '1'
     
+    # Cloudinary API Configuration (Athoy Roy — Module 1)
+    CLOUDINARY_CLOUD_NAME = os.getenv('CLOUDINARY_CLOUD_NAME', '')
+    CLOUDINARY_API_KEY = os.getenv('CLOUDINARY_API_KEY', '')
+    CLOUDINARY_API_SECRET = os.getenv('CLOUDINARY_API_SECRET', '')
+    
     # Session cookie security settings
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
