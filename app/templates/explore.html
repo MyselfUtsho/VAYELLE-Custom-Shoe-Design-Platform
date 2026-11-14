@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Explore Shoes — VAYELLE{% endblock %}
+
+{% block content %}
+<div class="section-container" style="padding-top: 32px; padding-bottom: 64px;">
+
+  <!-- Breadcrumb Navigation -->
+  <nav class="breadcrumb-nav" style="display:flex; align-items:center; gap:8px; font-size:0.875rem; color:var(--text-muted); margin-bottom:16px;">
+    <a href="{{ url_for('main.index') }}" style="color:var(--text-muted); text-decoration:none;">Home</a>
+    <span>/</span>
+    <span style="color:var(--text-heading); font-weight:600;">Explore Shoes</span>
+    {% if selected_gender != 'All' %}
+      <span>/</span>
+      <span style="color:var(--accent); font-weight:600;">{{ selected_gender }}</span>
+    {% endif %}
+    {% if selected_category != 'All' %}
+      <span>/</span>
+      <span style="color:var(--accent); font-weight:600;">{{ selected_category }}</span>
+    {% endif %}
+  </nav>
+
+  <!-- Page Header -->
+  <div class="page-header" style="margin-bottom: 24px;">
+    <p class="eyebrow" style="color:var(--accent); font-weight:700; text-transform:uppercase; letter-spacing:0.08em; font-size:0.75rem; margin-bottom:8px;">
+      Shoe Collection
+    </p>
+    <h1 style="font-size:2.25rem; font-weight:800; color:var(--text-heading); margin-bottom:8px;">
+      Browse Shoes by Category
+    </h1>
+    <p style="color:var(--text-muted); font-size:1rem; max-width:650px;">
+      Discover our handcrafted silhouettes. Filter by gender or shoe type to find the base for your custom footwear design.
+    </p>
+  </div>
+
+  <!-- Filter Controls Section -->
+  <div class="filter-controls-card" style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-xl); padding:20px 24px; margin-bottom:32px; box-shadow:var(--shadow-sm);">
+    
+    <!-- Filter Row: Gender and Shoe Type -->
+    <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:20px;">
+      
+      <!-- Gender Filter Group -->
+      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+        <span style="font-size:0.8125rem; font-weight:700; color:var(--text-heading); text-transform:uppercase; letter-spacing:0.05em;">
+          Gender:
+        </span>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <a href="{{ url_for('main.explore', gender='All', category=selected_category) }}" 
+             class="chip {% if selected_gender == 'All' %}active{% endif %}" 
+             style="text-decoration:none;">
+            All Genders
+          </a>
+          <a href="{{ url_for('main.explore', gender='Men', category=selected_category) }}" 
+             class="chip {% if selected_gender == 'Men' %}active{% endif %}" 
+             style="text-decoration:none;">
+            Men
+          </a>
+          <a href="{{ url_for('main.explore', gender='Women', category=selected_category) }}" 
+             class="chip {% if selected_gender == 'Women' %}active{% endif %}" 
+             style="text-decoration:none;">
+            Women
+          </a>
+          <a href="{{ url_for('main.explore', gender='Unisex', category=selected_category) }}" 
+             class="chip {% if selected_gender == 'Unisex' %}active{% endif %}" 
+             style="text-decoration:none;">
+            Unisex
+          </a>
+        </div>
+      </div>
+
+      <!-- Category / Shoe Type Filter Group -->
+      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+        <span style="font-size:0.8125rem; font-weight:700; color:var(--text-heading); text-transform:uppercase; letter-spacing:0.05em;">
+          Type:
+        </span>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <a href="{{ url_for('main.explore', gender=selected_gender, category='All') }}" 
+             class="chip {% if selected_category == 'All' %}active{% endif %}" 
+             style="text-decoration:none;">
+            All Types
+          </a>
+          <a href="{{ url_for('main.explore', gender=selected_gender, category='Sneakers') }}" 
+             class="chip {% if selected_category == 'Sneakers' %}active{% endif %}" 
+             style="text-decoration:none;">
+            Sneakers
+          </a>
+          <a href="{{ url_for('main.explore', gender=selected_gender, category='Casual') }}" 
+             class="chip {% if selected_category == 'Casual' %}active{% endif %}" 
+             style="text-decoration:none;">
+            Casual
+          </a>
+          <a href="{{ url_for('main.explore', gender=selected_gender, category='Formal') }}" 
+             class="chip {% if selected_category == 'Formal' %}active{% endif %}" 
+             style="text-decoration:none;">
+            Formal
+          </a>
+        </div>
+      </div>
+
+      <!-- Reset Filters Button -->
+      {% if selected_gender != 'All' or selected_category != 'All' %}
+        <div>
+          <a href="{{ url_for('main.explore') }}" 
+             class="btn btn-outline btn-sm" 
+             style="font-size:0.8125rem; padding:6px 14px; color:var(--accent); border-color:var(--accent);">
+            ✕ Clear Filters
+          </a>
+        </div>
+      {% endif %}
+
+    </div>
+
+    <!-- Active Filters Summary Banner -->
+    <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+      <div style="font-size:0.875rem; color:var(--text-muted);">
+        Showing <strong style="color:var(--text-heading);">{{ total_count }}</strong> shoe{% if total_count != 1 %}s{% endif %} in collection
+      </div>
+      
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        {% if selected_gender != 'All' %}
+          <span class="badge badge-default" style="font-size:0.75rem; padding:4px 10px;">
+            Gender: <strong>{{ selected_gender }}</strong>
+          </span>
+        {% endif %}
+        {% if selected_category != 'All' %}
+          <span class="badge badge-default" style="font-size:0.75rem; padding:4px 10px;">
+            Category: <strong>{{ selected_category }}</strong>
+          </span>
+        {% endif %}
+        {% if selected_gender == 'All' and selected_category == 'All' %}
+          <span style="font-size:0.75rem; color:var(--text-muted);">Viewing full catalog</span>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Product Grid -->
+  {% if shoes and shoes|length > 0 %}
+    <div class="product-grid-3">
+      {% for shoe in shoes %}
+        <div class="product-card" style="cursor:default;">
+          
+          <!-- Cloudinary / Static Image Delivery with Fallback -->
+          <img 
+            src="{{ shoe.image_url or '/static/images/shoe-black-runner.jpg' }}" 
+            alt="{{ shoe.shoe_name }}" 
+            class="product-card-image"
+            onerror="this.src='/static/images/shoe-black-runner.jpg'"
+            loading="lazy"
+          >
+          
+          <!-- Category Badge -->
+          <span class="product-card-badge">{{ shoe.category }}</span>
+
+          <!-- Product Details -->
+          <div class="product-card-body">
+            <div class="product-card-name">{{ shoe.shoe_name }}</div>
+            <div class="product-card-desc">
+              {{ shoe.description or 'Handcrafted footwear silhouette designed for personalized customization.' }}
+            </div>
+            
+            <div class="product-card-footer">
+              <span class="badge badge-default">{{ shoe.gender }}</span>
+              <div class="product-card-price">{{ bdt(shoe.base_price) }}</div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+  {% else %}
+    <!-- Empty State (No Shoes Found) -->
+    <div class="empty-state" style="text-align:center; padding:72px 24px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-2xl);">
+      <div style="font-size:3.5rem; margin-bottom:16px;">👟</div>
+      <h3 style="font-size:1.5rem; font-weight:700; color:var(--text-heading); margin-bottom:8px;">
+        No Shoes Found
+      </h3>
+      <p style="color:var(--text-muted); font-size:0.95rem; max-width:480px; margin:0 auto 24px;">
+        No shoes in our database matched your selected filters:
+        {% if selected_gender != 'All' %}<strong>Gender: {{ selected_gender }}</strong>{% endif %}
+        {% if selected_gender != 'All' and selected_category != 'All' %} and {% endif %}
+        {% if selected_category != 'All' %}<strong>Category: {{ selected_category }}</strong>{% endif %}.
+      </p>
+      <a href="{{ url_for('main.explore') }}" class="btn btn-primary">
+        Browse All Shoes
+      </a>
+    </div>
+  {% endif %}
+
+</div>
+
+<!-- Student-Friendly Vanilla JavaScript for UI Interaction -->
+<script>
+  // Simple client-side helper to log filter changes and assist navigation
+  document.addEventListener('DOMContentLoaded', function() {
+    var activeGender = "{{ selected_gender }}";
+    var activeCategory = "{{ selected_category }}";
+    console.log("VAYELLE Category Browser Loaded — Gender: " + activeGender + ", Category: " + activeCategory);
+  });
+</script>
+{% endblock %}

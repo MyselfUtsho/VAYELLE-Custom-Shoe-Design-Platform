@@ -8,12 +8,17 @@
   <div class="panel" style="margin-bottom:32px;background:linear-gradient(135deg, var(--stone-900) 0%, #292524 100%);color:white;padding:36px;border-radius:var(--radius-2xl);">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;">
       <div>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
           <span class="badge badge-accent">Manager Access Verified</span>
           {% if db_connected %}
             <span class="badge badge-success">● MongoDB Active</span>
           {% else %}
             <span class="badge badge-danger">● MongoDB Disconnected</span>
+          {% endif %}
+          {% if cloudinary_configured %}
+            <span class="badge badge-success">● Cloudinary Active</span>
+          {% else %}
+            <span class="badge" style="background:var(--stone-800);color:var(--stone-300);border:1px solid var(--stone-700);">○ Cloudinary Credentials Needed</span>
           {% endif %}
         </div>
         <h1 style="color:white;font-size:2.25rem;margin-bottom:6px;">
@@ -73,10 +78,10 @@
           <h2 style="font-size:1.5rem;">Add New Shoe to Database</h2>
         </div>
         <p style="font-size:0.875rem;color:var(--text-muted);margin-bottom:24px;">
-          Insert a new shoe silhouette directly into the MongoDB <code>shoes</code> collection.
+          Insert a new shoe silhouette directly into the MongoDB <code>shoes</code> collection with Cloudinary image delivery.
         </p>
 
-        <form method="POST" action="{{ url_for('manager.add_shoe') }}">
+        <form method="POST" action="{{ url_for('manager.add_shoe') }}" enctype="multipart/form-data">
           <!-- Shoe Name -->
           <div class="form-group">
             <label class="form-label" for="shoe_name">Shoe Name *</label>
@@ -140,25 +145,75 @@
             </div>
           </div>
 
-          <!-- Image URL -->
-          <div class="form-group">
-            <label class="form-label" for="image_url">Shoe Image URL or Local Asset Path</label>
-            <input 
-              type="text" 
-              class="form-input" 
-              id="image_url" 
-              name="image_url" 
-              placeholder="/static/images/shoe-black-runner.jpg"
-              value="/static/images/shoe-black-runner.jpg"
-            >
-            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
-              <span style="font-size:0.75rem;color:var(--text-muted);align-self:center;">Presets:</span>
-              <button type="button" class="chip btn-sm" onclick="setPresetImg('/static/images/shoe-black-runner.jpg')">Runner</button>
-              <button type="button" class="chip btn-sm" onclick="setPresetImg('/static/images/shoe-white.jpg')">Cloud White</button>
-              <button type="button" class="chip btn-sm" onclick="setPresetImg('/static/images/shoe-black-beige.jpg')">Mono Classic</button>
-              <button type="button" class="chip btn-sm" onclick="setPresetImg('/static/images/shoe-retro.jpg')">Retro Flex</button>
-              <button type="button" class="chip btn-sm" onclick="setPresetImg('/static/images/shoe-formal.jpg')">Urban Formal</button>
-              <button type="button" class="chip btn-sm" onclick="setPresetImg('/static/images/shoe-canvas.jpg')">Daily Canvas</button>
+          <!-- Shoe Product Image (Cloudinary Integration: Option A or Option B) -->
+          <div class="form-group" style="padding:18px;border:1px solid var(--border-color);border-radius:var(--radius-lg);background:var(--bg-card);margin-bottom:20px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+              <label class="form-label" style="margin-bottom:0;font-weight:700;">
+                Shoe Product Image *
+              </label>
+              <span class="badge badge-accent" style="font-size:0.75rem;">Cloudinary CDN Delivery</span>
+            </div>
+            
+            <p style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:14px;line-height:1.4;">
+              Provide an image using either Option A or Option B. Images are uploaded to Cloudinary with automatic optimization (<code>f_auto</code>, <code>q_auto</code>).
+            </p>
+
+            <!-- Option A: Direct File Upload -->
+            <div style="margin-bottom:16px;padding:12px;background:var(--bg-main);border-radius:var(--radius-md);border:1px dashed var(--stone-300);">
+              <label class="form-label" for="shoe_image" style="font-weight:600;font-size:0.875rem;">
+                Option A: Upload Image File (Preferred)
+              </label>
+              <input 
+                type="file" 
+                class="form-input" 
+                id="shoe_image" 
+                name="shoe_image" 
+                accept=".jpg,.jpeg,.png,.webp"
+                onchange="previewUploadedFile(this)"
+              >
+              <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">
+                Supported: <strong>JPG, JPEG, PNG, WEBP</strong> (Max <strong>10 MB</strong>).
+              </div>
+            </div>
+
+            <!-- Option B: Public Image URL or Preset -->
+            <div style="padding:12px;background:var(--bg-main);border-radius:var(--radius-md);border:1px solid var(--stone-200);">
+              <label class="form-label" for="image_url" style="font-weight:600;font-size:0.875rem;">
+                Option B: Public Image URL or Preset
+              </label>
+              <input 
+                type="text" 
+                class="form-input" 
+                id="image_url" 
+                name="image_url" 
+                placeholder="https://images.unsplash.com/... or choose preset below"
+                oninput="previewUrlImage(this.value)"
+              >
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+                <span style="font-size:0.75rem;color:var(--text-muted);align-self:center;">Presets:</span>
+                <button type="button" class="chip btn-sm" onclick="setPresetImg('/static/images/shoe-black-runner.jpg')">Runner</button>
+                <button type="button" class="chip btn-sm" onclick="setPresetImg('/static/images/shoe-white.jpg')">Cloud White</button>
+                <button type="button" class="chip btn-sm" onclick="setPresetImg('/static/images/shoe-black-beige.jpg')">Mono Classic</button>
+                <button type="button" class="chip btn-sm" onclick="setPresetImg('/static/images/shoe-retro.jpg')">Retro Flex</button>
+                <button type="button" class="chip btn-sm" onclick="setPresetImg('/static/images/shoe-formal.jpg')">Urban Formal</button>
+                <button type="button" class="chip btn-sm" onclick="setPresetImg('/static/images/shoe-canvas.jpg')">Daily Canvas</button>
+              </div>
+              <div style="font-size:0.75rem;color:var(--text-muted);margin-top:6px;">
+                URLs undergo strict SSRF validation (private/internal IPs blocked). Selected presets are uploaded to Cloudinary so no local static path is saved.
+              </div>
+            </div>
+
+            <!-- Live Image Preview Container -->
+            <div id="image-preview-container" style="display:none;margin-top:14px;padding:10px;border-radius:var(--radius-md);background:var(--stone-100);align-items:center;gap:12px;">
+              <img id="image-preview" src="" alt="Preview" style="width:60px;height:60px;object-fit:cover;border-radius:var(--radius-sm);background:white;">
+              <div>
+                <div style="font-size:0.8125rem;font-weight:600;color:var(--text-heading);" id="preview-label">Image Selected</div>
+                <div style="font-size:0.75rem;color:var(--text-muted);" id="preview-sub">Ready for Cloudinary API processing</div>
+              </div>
+            </div>
+
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-top:10px;">
+              <em>Note: Direct file upload takes priority if both are provided.</em>
             </div>
           </div>
 
@@ -247,6 +302,45 @@
 <script>
   function setPresetImg(url) {
     document.getElementById('image_url').value = url;
+    previewUrlImage(url);
+  }
+
+  function previewUploadedFile(input) {
+    const container = document.getElementById('image-preview-container');
+    const preview = document.getElementById('image-preview');
+    const label = document.getElementById('preview-label');
+    const sub = document.getElementById('preview-sub');
+
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        preview.src = e.target.result;
+        label.textContent = file.name;
+        sub.textContent = `${(file.size / 1024).toFixed(1)} KB · File Upload (Option A)`;
+        container.style.display = 'flex';
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  function previewUrlImage(url) {
+    const container = document.getElementById('image-preview-container');
+    const preview = document.getElementById('image-preview');
+    const label = document.getElementById('preview-label');
+    const sub = document.getElementById('preview-sub');
+
+    if (url && url.trim().length > 0) {
+      preview.src = url.trim();
+      label.textContent = url.startsWith('/static/') ? 'Preset Selected' : 'Remote URL';
+      sub.textContent = url.startsWith('/static/') ? 'Preset will be uploaded to Cloudinary' : 'Will be downloaded & uploaded to Cloudinary';
+      container.style.display = 'flex';
+    } else {
+      const fileInput = document.getElementById('shoe_image');
+      if (!fileInput.files || !fileInput.files[0]) {
+        container.style.display = 'none';
+      }
+    }
   }
 </script>
 {% endblock %}

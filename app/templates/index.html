@@ -15,7 +15,7 @@
         <div><strong style="color:var(--text-heading);font-size:1.5rem;">20+</strong><br><small style="color:var(--text-muted);">Colors</small></div>
       </div>
       <div class="hero-buttons">
-        <a href="/static/../pages/explore.html" class="btn btn-primary btn-lg">Explore Collection</a>
+        <a href="{{ url_for('main.explore') }}" class="btn btn-primary btn-lg">Explore Collection</a>
         <a href="/static/../pages/studio.html" class="btn btn-outline btn-lg">Start Designing</a>
       </div>
     </div>
@@ -102,19 +102,19 @@
 <section class="section-container">
   <div class="section-header"><p class="eyebrow">Browse</p><h2>Shop by Category</h2></div>
   <div class="product-grid-3">
-    <a href="/static/../pages/category.html?cat=men" style="display:block;position:relative;border-radius:var(--radius-2xl);overflow:hidden;aspect-ratio:4/3;text-decoration:none;">
+    <a href="{{ url_for('main.explore', gender='Men') }}" style="display:block;position:relative;border-radius:var(--radius-2xl);overflow:hidden;aspect-ratio:4/3;text-decoration:none;">
       <img src="{{ url_for('static', filename='images/shoe-formal.jpg') }}" alt="Men's Collection" style="width:100%;height:100%;object-fit:cover;">
       <div style="position:absolute;inset:0;background:linear-gradient(transparent 40%,rgba(0,0,0,0.6));display:flex;align-items:flex-end;padding:24px;">
         <h3 style="color:white;font-size:1.25rem;">Men's Collection</h3>
       </div>
     </a>
-    <a href="/static/../pages/category.html?cat=women" style="display:block;position:relative;border-radius:var(--radius-2xl);overflow:hidden;aspect-ratio:4/3;text-decoration:none;">
+    <a href="{{ url_for('main.explore', gender='Women') }}" style="display:block;position:relative;border-radius:var(--radius-2xl);overflow:hidden;aspect-ratio:4/3;text-decoration:none;">
       <img src="{{ url_for('static', filename='images/shoe-retro.jpg') }}" alt="Women's Collection" style="width:100%;height:100%;object-fit:cover;">
       <div style="position:absolute;inset:0;background:linear-gradient(transparent 40%,rgba(0,0,0,0.6));display:flex;align-items:flex-end;padding:24px;">
         <h3 style="color:white;font-size:1.25rem;">Women's Collection</h3>
       </div>
     </a>
-    <a href="/static/../pages/category.html?cat=unisex" style="display:block;position:relative;border-radius:var(--radius-2xl);overflow:hidden;aspect-ratio:4/3;text-decoration:none;">
+    <a href="{{ url_for('main.explore', gender='Unisex') }}" style="display:block;position:relative;border-radius:var(--radius-2xl);overflow:hidden;aspect-ratio:4/3;text-decoration:none;">
       <img src="{{ url_for('static', filename='images/shoe-white.jpg') }}" alt="Unisex Collection" style="width:100%;height:100%;object-fit:cover;">
       <div style="position:absolute;inset:0;background:linear-gradient(transparent 40%,rgba(0,0,0,0.6));display:flex;align-items:flex-end;padding:24px;">
         <h3 style="color:white;font-size:1.25rem;">Unisex Collection</h3>
@@ -159,7 +159,7 @@
   <div class="cta-banner">
     <h2>Ready to create?</h2>
     <p style="font-size:1.125rem;">match it. vibe it.</p>
-    <a href="/static/../pages/explore.html" class="btn btn-white btn-lg" style="margin-top:8px;">Explore Collection</a>
+    <a href="{{ url_for('main.explore') }}" class="btn btn-white btn-lg" style="margin-top:8px;">Explore Collection</a>
   </div>
 </section>
 {% endblock %}
