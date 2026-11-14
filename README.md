@@ -101,35 +101,50 @@ The foundational architecture and Manager management system are 100% complete, t
    * Comprehensive inventory view with category pills, availability badges, BDT price formatting (`৳`), and deletion controls.
 10. **MongoDB Integration:**
     * Unified connection utility supporting both local MongoDB (`mongodb://127.0.0.1:27017/vayelle_db`) and cloud MongoDB Atlas (`mongodb+srv://...`).
+11. **Module 1 (Athoy Roy) — Browse Shoes by Category & Cloudinary Integration:**
+    * **Category-Based Catalog (`/explore`):** Dynamic shoe browsing with real-time filter chips by Gender (Men, Women, Unisex) and Shoe Type (Sneakers, Casual, Formal).
+    * **Cloudinary Image Storage & CDN Delivery:** Centralized cloud image storage using the official Cloudinary Python SDK. Replaces local image dependencies with secure HTTPS URLs.
+    * **Dual Manager Image Uploads (`/manager/dashboard`):** Option A (direct file upload up to 10 MB with MIME/magic-byte checks) and Option B (public image URL download with robust IPv4/IPv6 SSRF guards).
+    * **Automated Transformations:** Automatic format selection (`f_auto`), quality optimization (`q_auto`), and responsive bounding dimensions (`c_limit,w_800,h_800`).
 
 ---
 
-## ⏳ Planned Team Features — Not Yet Implemented
+## ⏳ Planned Team Features — Upcoming Lab Modules
 
-*The following features are assigned to individual team members for upcoming lab modules and are strictly pending future development:*
+*The following features are assigned to teammates for upcoming lab modules:*
 
-* ❌ **Browse Shoes by Category:** Dedicated category filter views & sorting.
-* ❌ **Color Exploration & Accessible Palettes:** Color API integration and high-contrast color-blind mode.
-* ❌ **Interactive 2D Design Canvas:** Fabric.js drag-and-drop customization editor.
-* ❌ **Budget-Based Shoe Search & Dynamic Price Calculation:** Algorithmic price estimation based on materials and sole components.
-* ❌ **Outfit Image Upload & Gemini Vision Analysis:** Multi-modal outfit photo style parsing.
-* ❌ **Material & Sole Selection:** Custom sole and leather/mesh material selection.
-* ❌ **Decorative Elements Library & On-Foot Preview:** Lifestyle image synthesis with Cloudinary.
-* ❌ **3D Shoe Viewer:** Interactive Three.js model viewer.
-* ❌ **Shoe Size Guide & Sandbox Payment:** SSLCommerz payment gateway integration.
-* ❌ **Smart Shoe Recommendations & Community Remix:** Recommendation engine and design sharing gallery.
+* ❌ **Color Exploration & Accessible Palettes:** Color API integration and high-contrast color-blind mode (Miftahul).
+* ❌ **Interactive 2D Design Canvas:** Fabric.js drag-and-drop customization editor (Miftahul).
+* ❌ **Budget-Based Shoe Search & Dynamic Price Calculation:** Algorithmic price estimation based on materials and sole components (Diya).
+* ❌ **Outfit Image Upload & Gemini Vision Analysis:** Multi-modal outfit photo style parsing (Diya).
+* ❌ **Material & Sole Selection:** Custom sole and leather/mesh material selection (Athoy - Module 2).
+* ❌ **Decorative Elements Library & On-Foot Preview:** Lifestyle image synthesis with Cloudinary (Athoy - Module 3).
+* ❌ **3D Shoe Viewer:** Interactive Three.js model viewer (Athoy - Module 3).
+* ❌ **Shoe Size Guide & Sandbox Payment:** SSLCommerz payment gateway integration (Khairul).
+* ❌ **Smart Shoe Recommendations & Community Remix:** Recommendation engine and design sharing gallery (Khairul).
 
 ---
 
-## 🚀 Local Development Setup
+## 👥 Teammate Setup Guide — Shared Database & Cloudinary Architecture
 
-### 1. Clone the Repository
+To ensure all team members work seamlessly without synchronizing image files or experiencing missing data, VAYELLE utilizes a **centralized cloud architecture**:
+
+1. **Shared Database:** Every teammate connects their local Flask app to the **same authorized MongoDB Atlas cluster** via `MONGO_URI`.
+2. **Centralized Media Hosting:** Shoe images are hosted in the cloud on **Cloudinary**. MongoDB stores only the secure HTTPS URLs, not raw binary files or local disk paths.
+3. **Zero Local File Copying:** Teammates do not need to download or copy shoe images to their computers. The browser automatically streams them via Cloudinary's fast global CDN.
+4. **Instant Synchronization:** When an authorized manager adds a shoe on the live site or from their local workstation, the product and image are immediately available to every teammate locally and on Render.
+
+---
+
+### Step-by-Step Setup for Teammates
+
+#### 1. Clone the Repository
 ```bash
 git clone https://github.com/MyselfUtsho/VAYELLE-Custom-Shoe-Design-Platform.git
 cd VAYELLE-Custom-Shoe-Design-Platform
 ```
 
-### 2. Create and Activate Virtual Environment
+#### 2. Create and Activate Virtual Environment
 ```bash
 # Windows
 python -m venv .venv
@@ -140,49 +155,70 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-### 3. Install Dependencies
+#### 3. Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Configure Environment Variables
-Copy the example configuration:
+#### 4. Configure Local Environment (`.env`)
+Copy `.env.example` to create your local `.env`:
 ```bash
 cp .env.example .env
 ```
-Edit `.env` to configure your MongoDB connection:
+Open `.env` and fill in the shared project settings:
 ```ini
-SECRET_KEY=your-secure-random-secret-key
-MONGO_URI=mongodb://127.0.0.1:27017/vayelle_db
+# Flask Security
+SECRET_KEY=generate_a_secure_random_string_for_your_local_session
+
+# Shared MongoDB Atlas Database (Required for all teammates)
+MONGO_URI=mongodb+srv://<db_username>:<db_password>@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority
 DB_NAME=vayelle_db
+
+# Cloudinary API Configuration (Athoy Roy — Module 1)
+# Note: Required for Managers uploading images; optional for teammates only browsing catalog
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+
+# Runtime
 FLASK_ENV=development
 FLASK_DEBUG=1
 PORT=5000
 ```
-> **For Cloud MongoDB (Atlas):** Set `MONGO_URI=mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/vayelle_db?retryWrites=true&w=majority`
 
-### 5. Verify Database Connectivity
+> [!IMPORTANT]
+> **Security Rules:**
+> * **Never commit `.env` to GitHub.** `.env` is ignored by `.gitignore` and must stay on your local machine only.
+> * Never paste database passwords or API secrets into code files, README, or pull requests.
+> * Every teammate uses the shared database: `DB_NAME=vayelle_db`.
+
+#### 5. Verify Database Connectivity
 ```bash
 python manage.py test-db
 ```
+Confirm that the terminal outputs `Database Connection: SUCCESSFUL`.
 
-### 6. Create Initial Manager Account
+#### 6. Run the Application Locally
+```bash
+python run.py
+```
+Open **[http://127.0.0.1:5000](http://127.0.0.1:5000)** in your browser. Navigate to **[http://127.0.0.1:5000/explore](http://127.0.0.1:5000/explore)** to browse the shared catalog.
+
+---
+
+## 🚀 Management & Utility Commands
+
+### Create Initial Manager Account
 Run the secure interactive management CLI:
 ```bash
 python manage.py create-manager
 ```
 Follow the prompts to enter Manager Name, Email, and Password.
 
-### 7. Seed Sample Inventory (Optional)
+### Seed Sample Inventory (Offline / Mock Mode)
 ```bash
 python manage.py seed-shoes
 ```
-
-### 8. Run the Application
-```bash
-python run.py
-```
-Open **[http://127.0.0.1:5000](http://127.0.0.1:5000)** in your browser.
 
 ---
 
