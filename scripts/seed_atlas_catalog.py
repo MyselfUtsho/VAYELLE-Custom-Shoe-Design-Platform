@@ -240,12 +240,14 @@ def run_catalog_seed(dry_run=True, source_local=False):
             records_to_process = []
             for d in local_docs:
                 rec = {
+                    "_id": d.get("_id"),
                     "shoe_name": d.get("shoe_name"),
                     "category": d.get("category"),
                     "gender": d.get("gender"),
                     "description": d.get("description"),
                     "base_price": float(d.get("base_price", 0.0)),
                     "availability": d.get("availability", "In Stock"),
+                    "created_at": d.get("created_at"),
                     "created_by": d.get("created_by", "system")
                 }
                 img_url = d.get("image_url", "")
@@ -280,18 +282,45 @@ def run_catalog_seed(dry_run=True, source_local=False):
             file_size = os.path.getsize(filepath)
             logger.info(f"Verified static image on disk: {filename} ({file_size} bytes)")
 
-    # 4. Process Images (Upload or Mock for Dry-Run)
+    # 4. Process Images (Reuse Existing or Upload if Missing)
     if not dry_run:
         configure_cloudinary()
+        import cloudinary.api
+        import cloudinary.utils
         for filename in unique_preset_files:
-            filepath = os.path.join(static_img_dir, filename)
-            logger.info(f"Uploading {filename} to Cloudinary...")
-            url, err = upload_shoe_image(filepath, folder="vayelle/shoes/presets")
-            if err or not url:
-                logger.error(f"Failed to upload {filename} to Cloudinary: {err}")
-                return {"status": "FAILED", "error": f"Upload failed for {filename}: {err}"}
-            preset_url_cache[filename] = url
-            logger.info(f"Uploaded {filename} -> {url}")
+            clean_name = os.path.splitext(filename)[0]
+            public_id = f"vayelle/shoes/presets/{clean_name}"
+            
+            # Check if asset already exists in Cloudinary to prevent duplicate uploads
+            existing_url = None
+            try:
+                asset_info = cloudinary.api.resource(public_id)
+                if asset_info and asset_info.get("secure_url"):
+                    existing_url, _ = cloudinary.utils.cloudinary_url(
+                        public_id,
+                        format="jpg",
+                        transformation=[
+                            {'quality': 'auto'},
+                            {'fetch_format': 'auto'},
+                            {'width': 800, 'height': 800, 'crop': 'limit'}
+                        ],
+                        secure=True
+                    )
+                    logger.info(f"Reusing existing Cloudinary asset: {public_id} -> {existing_url}")
+            except Exception:
+                existing_url = None
+
+            if existing_url:
+                preset_url_cache[filename] = existing_url
+            else:
+                filepath = os.path.join(static_img_dir, filename)
+                logger.info(f"Uploading missing asset {filename} to Cloudinary...")
+                url, err = upload_shoe_image(filepath, folder="vayelle/shoes/presets")
+                if err or not url:
+                    logger.error(f"Failed to upload {filename} to Cloudinary: {err}")
+                    return {"status": "FAILED", "error": f"Upload failed for {filename}: {err}"}
+                preset_url_cache[filename] = url
+                logger.info(f"Uploaded {filename} -> {url}")
     else:
         for filename in unique_preset_files:
             clean_name = os.path.splitext(filename)[0]
@@ -318,6 +347,11 @@ def run_catalog_seed(dry_run=True, source_local=False):
             "availability": item.get("availability", "In Stock"),
             "created_by": item.get("created_by", "system")
         }
+        if item.get("_id") is not None:
+            doc["_id"] = item["_id"]
+        if item.get("created_at") is not None:
+            doc["created_at"] = item["created_at"]
+
         prepared_documents.append((shoe_name, doc))
 
     # 6. Database Upsert Operations
@@ -328,13 +362,17 @@ def run_catalog_seed(dry_run=True, source_local=False):
         try:
             shoes_col = get_atlas_collection()
             for shoe_name, doc in prepared_documents:
-                # IMPORTANT: Never include '_id' in the $set update document to protect immutable _id
-                set_data = {k: v for k, v in doc.items() if k != '_id'}
+                # IMPORTANT: Never include '_id' or 'created_at' in the $set update document
+                set_data = {k: v for k, v in doc.items() if k not in ('_id', 'created_at')}
+                on_insert = {"created_at": doc.get('created_at', now_utc)}
+                if '_id' in doc:
+                    on_insert['_id'] = doc['_id']
+
                 result = shoes_col.update_one(
                     {"shoe_name": shoe_name},
                     {
                         "$set": set_data,
-                        "$setOnInsert": {"created_at": now_utc}
+                        "$setOnInsert": on_insert
                     },
                     upsert=True
                 )
