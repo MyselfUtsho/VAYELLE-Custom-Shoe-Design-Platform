@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block title %}Payment Successful — Order Confirmed | VAYELLE{% endblock %}
+{% block extra_head %}
+<style>
+.ps-page { min-height:80vh; display:flex; align-items:center; justify-content:center; background:var(--stone-50); padding:40px 20px; }
+.ps-card { background:#fff; border-radius:24px; max-width:600px; width:100%; padding:0; overflow:hidden; box-shadow:0 8px 40px rgba(0,0,0,.08); border:1.5px solid var(--stone-200); }
+.ps-top { background:linear-gradient(135deg,#f0fdf4,#dcfce7); padding:40px 32px; text-align:center; border-bottom:1.5px solid #bbf7d0; }
+.ps-icon { width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg,#22c55e,#16a34a); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; box-shadow:0 8px 24px rgba(34,197,94,.35); animation:ps-pop .5s cubic-bezier(.175,.885,.32,1.275); }
+.ps-icon svg { color:#fff; }
+.ps-top h1 { font-size:1.6rem; font-weight:800; color:#15803d; margin:0 0 6px; }
+.ps-top p  { color:#166534; font-size:.9rem; margin:0; }
+.ps-tran { display:inline-flex; align-items:center; gap:8px; margin-top:14px; background:rgba(34,197,94,.1); border:1px solid rgba(34,197,94,.2); border-radius:999px; padding:6px 16px; }
+.ps-tran span { font-size:.72rem; font-weight:700; color:#15803d; letter-spacing:.05em; text-transform:uppercase; }
+.ps-tran code { font-family:monospace; font-size:.78rem; font-weight:800; color:#15803d; }
+.ps-body { padding:28px 32px; }
+.ps-section-title { font-size:.72rem; font-weight:700; color:var(--stone-500); letter-spacing:.08em; text-transform:uppercase; margin:0 0 12px; }
+.ps-details { background:var(--stone-50); border:1px solid var(--stone-200); border-radius:12px; overflow:hidden; margin-bottom:24px; }
+.ps-row { display:flex; justify-content:space-between; align-items:center; padding:11px 16px; border-bottom:1px solid var(--stone-200); font-size:.85rem; }
+.ps-row:last-child { border-bottom:none; }
+.ps-row .ps-lbl { color:var(--stone-500); }
+.ps-row .ps-val { font-weight:700; color:var(--stone-900); }
+.ps-row .ps-val.accent { color:#f97316; font-size:1rem; }
+.ps-row .ps-val.green  { color:#15803d; }
+.ps-next { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:4px; }
+@media(max-width:460px){ .ps-next { grid-template-columns:1fr; } }
+.ps-btn-primary {
+  display:flex; align-items:center; justify-content:center; gap:7px;
+  padding:13px; border-radius:12px; font-weight:700; font-size:.88rem;
+  background:linear-gradient(135deg,#f97316,#ea580c); color:#fff;
+  text-decoration:none; transition:all .2s;
+  box-shadow:0 4px 14px rgba(249,115,22,.35);
+}
+.ps-btn-primary:hover { transform:translateY(-2px); box-shadow:0 7px 20px rgba(249,115,22,.45); }
+.ps-btn-outline {
+  display:flex; align-items:center; justify-content:center; gap:7px;
+  padding:13px; border-radius:12px; font-weight:700; font-size:.88rem;
+  border:1.5px solid var(--stone-300); color:var(--stone-700); background:#fff;
+  text-decoration:none; transition:all .2s;
+}
+.ps-btn-outline:hover { border-color:#f97316; color:#f97316; }
+.ps-confetti { position:fixed; inset:0; pointer-events:none; z-index:9999; overflow:hidden; }
+@keyframes ps-pop { from{transform:scale(0);opacity:0;} to{transform:scale(1);opacity:1;} }
+@keyframes ps-fall { from{transform:translateY(-10px) rotate(0deg);} to{transform:translateY(110vh) rotate(720deg);} }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ps-confetti" id="ps-confetti"></div>
+<div class="ps-page">
+  <div class="ps-card">
+    <div class="ps-top">
+      <div class="ps-icon">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <h1>Payment Successful! 🎉</h1>
+      <p>Your custom VAYELLE shoe order has been confirmed and is being prepared.</p>
+      <div class="ps-tran">
+        <span>Transaction ID:</span>
+        <code>{{ tran_id }}</code>
+      </div>
+    </div>
+
+    <div class="ps-body">
+      <div class="ps-section-title">📋 Order Details</div>
+      <div class="ps-details">
+        <div class="ps-row"><span class="ps-lbl">Shoe</span><span class="ps-val">{{ order.get('shoe_name', 'Custom Shoe') }}</span></div>
+        <div class="ps-row"><span class="ps-lbl">Size</span><span class="ps-val">EU {{ order.get('size_eu', 'N/A') }}</span></div>
+        <div class="ps-row"><span class="ps-lbl">Delivery</span><span class="ps-val">{{ order.get('delivery', 'Standard') }}</span></div>
+        <div class="ps-row"><span class="ps-lbl">Ship To</span><span class="ps-val">{{ order.get('name', '') }}</span></div>
+        <div class="ps-row"><span class="ps-lbl">Address</span><span class="ps-val" style="text-align:right;max-width:60%;">{{ order.get('address', '') }}</span></div>
+      </div>
+
+      <div class="ps-section-title">💳 Payment Details</div>
+      <div class="ps-details">
+        <div class="ps-row"><span class="ps-lbl">Amount Paid</span><span class="ps-val accent">৳{{ '{:,.0f}'.format(amount) }}</span></div>
+        <div class="ps-row"><span class="ps-lbl">Payment Method</span><span class="ps-val">{{ card }}</span></div>
+        <div class="ps-row"><span class="ps-lbl">Validation ID</span><span class="ps-val" style="font-family:monospace;font-size:.78rem;">{{ val_id }}</span></div>
+        <div class="ps-row"><span class="ps-lbl">Status</span><span class="ps-val green">✅ VALIDATED</span></div>
+        <div class="ps-row"><span class="ps-lbl">Mode</span><span class="ps-val">SSLCommerz Sandbox</span></div>
+      </div>
+
+      <div class="ps-next">
+        <a href="{{ url_for('main.explore') }}" class="ps-btn-primary">
+          👟 Continue Shopping
+        </a>
+        <a href="{{ url_for('main.index') }}" class="ps-btn-outline">
+          🏠 Back to Home
+        </a>
+      </div>
+
+      <p style="font-size:.72rem;color:var(--stone-400);text-align:center;margin-top:16px;line-height:1.6;">
+        ⚠ Sandbox Mode — No real payment was processed. This is a simulation for the CSE471 academic project.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Confetti effect
+(function(){
+  const container = document.getElementById('ps-confetti');
+  const colors = ['#f97316','#22c55e','#3b82f6','#f59e0b','#ec4899','#8b5cf6'];
+  for(let i = 0; i < 80; i++){
+    const el = document.createElement('div');
+    const size = Math.random() * 10 + 6;
+    Object.assign(el.style, {
+      position:'absolute', width:size+'px', height:size+'px',
+      background: colors[Math.floor(Math.random()*colors.length)],
+      borderRadius: Math.random()>.5 ? '50%' : '2px',
+      left: Math.random()*100+'vw',
+      top: '-20px',
+      opacity: Math.random()*.8+.2,
+      animation: `ps-fall ${Math.random()*2+1.5}s ${Math.random()*1.5}s linear forwards`,
+    });
+    container.appendChild(el);
+  }
+  setTimeout(()=>{ container.remove(); }, 5000);
+})();
+</script>
+{% endblock %}

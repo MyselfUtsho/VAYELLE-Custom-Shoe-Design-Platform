@@ -1,0 +1,544 @@
+{% extends 'base.html' %}
+{% block title %}Shoe Size Guide — Find Your Perfect Fit | VAYELLE{% endblock %}
+
+{% block extra_head %}
+<style>
+/* ═══════════════════════════════════════════════════════════════════════════
+   VAYELLE — Shoe Size Guide  (Khairul Islam Bhuiya · Module 2)
+═══════════════════════════════════════════════════════════════════════════ */
+.sg-hero {
+  background: linear-gradient(135deg, #1c1917 0%, #292524 50%, #1a0a00 100%);
+  padding: 64px 24px 72px; text-align: center; position: relative; overflow: hidden;
+}
+.sg-hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 70% 60% at 30% 50%, rgba(249,115,22,.16), transparent 70%),
+              radial-gradient(ellipse 50% 50% at 80% 40%, rgba(234,88,12,.1), transparent 70%);
+}
+.sg-hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(249,115,22,.12); border: 1px solid rgba(249,115,22,.3);
+  color: #fb923c; font-size: .72rem; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; padding: 6px 16px; border-radius: 999px;
+  margin-bottom: 18px; position: relative;
+}
+.sg-hero h1 {
+  font-size: clamp(1.9rem, 5vw, 3.2rem); font-weight: 800;
+  color: #fff; letter-spacing: -.02em; margin: 0 0 14px; position: relative;
+}
+.sg-hero h1 em { color: #f97316; font-style: normal; }
+.sg-hero p {
+  font-size: 1rem; color: #a8a29e; max-width: 480px;
+  margin: 0 auto 32px; line-height: 1.65; position: relative;
+}
+/* stat chips */
+.sg-stats {
+  display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; position: relative;
+}
+.sg-stat {
+  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 12px; padding: 12px 20px; text-align: center;
+}
+.sg-stat-val { font-size: 1.3rem; font-weight: 800; color: #f97316; }
+.sg-stat-lbl { font-size: .7rem; color: #78716c; text-transform: uppercase; letter-spacing: .08em; margin-top: 2px; }
+
+/* layout */
+.sg-container { max-width: 1100px; margin: 0 auto; padding: 48px 24px 80px; }
+.sg-grid { display: grid; grid-template-columns: 1fr 1.6fr; gap: 28px; }
+@media(max-width:768px){ .sg-grid { grid-template-columns:1fr; } }
+
+/* cards */
+.sg-card {
+  background: #fff; border: 1.5px solid var(--stone-200);
+  border-radius: 20px; padding: 32px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.05);
+  margin-bottom: 24px;
+}
+.sg-card-hd {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 24px;
+}
+.sg-card-hd h2 { font-size: 1.1rem; font-weight: 700; color: var(--stone-900); margin: 0; }
+.sg-hd-line { flex:1; height:1px; background: var(--stone-200); }
+
+/* unit tabs */
+.sg-unit-tabs {
+  display: flex; gap: 6px; margin-bottom: 20px;
+  background: var(--stone-100); border-radius: 12px; padding: 4px;
+}
+.sg-unit-tab {
+  flex: 1; padding: 8px; border-radius: 9px;
+  font-size: .78rem; font-weight: 700; border: none; cursor: pointer;
+  background: transparent; color: var(--stone-500); transition: all .2s;
+  letter-spacing: .04em; text-transform: uppercase;
+}
+.sg-unit-tab.active {
+  background: #fff; color: #f97316;
+  box-shadow: 0 1px 6px rgba(0,0,0,.1);
+}
+
+/* Input with unit */
+.sg-input-wrap {
+  position: relative; margin-bottom: 20px;
+}
+.sg-input-wrap input {
+  width: 100%; padding: 14px 60px 14px 16px;
+  border: 2px solid var(--stone-200); border-radius: 12px;
+  font-size: 1.05rem; font-weight: 600; color: var(--stone-900);
+  outline: none; transition: border-color .2s, box-shadow .2s;
+  box-sizing: border-box; background: var(--stone-50);
+}
+.sg-input-wrap input:focus { border-color: #f97316; box-shadow: 0 0 0 3px rgba(249,115,22,.12); background:#fff; }
+.sg-input-unit {
+  position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+  font-size: .78rem; font-weight: 700; color: var(--stone-400);
+  letter-spacing: .06em; text-transform: uppercase;
+}
+
+/* result box */
+.sg-result {
+  display: none;
+  background: linear-gradient(135deg, #fff7ed, #fff);
+  border: 2px solid #fed7aa; border-radius: 16px;
+  padding: 24px; text-align: center; margin-bottom: 20px;
+  animation: sg-fadein .4s ease;
+}
+.sg-result-label { font-size: .78rem; color: #92400e; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
+.sg-result-size  { font-size: 3.5rem; font-weight: 900; color: #f97316; line-height: 1; margin: 8px 0; }
+.sg-result-alts  { font-size: .82rem; color: #92400e; }
+.sg-result-alts span { background: #fed7aa; padding: 3px 10px; border-radius: 999px; margin: 2px; display: inline-block; }
+.sg-result-fit   { margin-top: 12px; padding-top: 12px; border-top: 1px solid #fed7aa; }
+.sg-fit-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: .75rem; font-weight: 700; padding: 4px 10px;
+  border-radius: 999px; margin: 2px;
+}
+.sg-fit-narrow { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.sg-fit-regular { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.sg-fit-wide   { background: #fdf4ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+
+/* save size btn */
+.sg-save-btn {
+  width: 100%; padding: 12px; border-radius: 12px;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: #fff; font-weight: 700; font-size: .9rem; border: none;
+  cursor: pointer; transition: all .2s; margin-bottom: 16px;
+  display: none; box-shadow: 0 4px 14px rgba(249,115,22,.35);
+}
+.sg-save-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(249,115,22,.45); }
+.sg-saved-badge {
+  display: none; align-items: center; gap: 8px;
+  background: #f0fdf4; border: 1.5px solid #86efac;
+  border-radius: 10px; padding: 10px 14px; margin-bottom: 16px;
+  font-size: .82rem; font-weight: 600; color: #15803d;
+}
+.sg-checkout-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 14px; border-radius: 12px;
+  background: var(--stone-900); color: #fff;
+  font-weight: 700; font-size: .9rem; text-decoration: none;
+  transition: all .2s;
+}
+.sg-checkout-btn:hover { background: #000; transform: translateY(-1px); }
+
+/* measure guide */
+.sg-measure-steps { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.sg-measure-step {
+  display: flex; gap: 14px; align-items: flex-start;
+  padding: 14px; background: var(--stone-50); border: 1px solid var(--stone-200);
+  border-radius: 12px; transition: border-color .2s;
+}
+.sg-measure-step:hover { border-color: #fed7aa; }
+.sg-step-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: #fff; font-size: .78rem; font-weight: 800;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.sg-step-txt { font-size: .85rem; color: var(--stone-700); line-height: 1.5; padding-top: 2px; }
+
+/* size table */
+.sg-table-wrap {
+  overflow-x: auto; border-radius: 14px;
+  border: 1.5px solid var(--stone-200);
+}
+.sg-table {
+  width: 100%; border-collapse: collapse; min-width: 480px;
+}
+.sg-table thead tr {
+  background: linear-gradient(135deg, #1c1917, #292524);
+}
+.sg-table thead th {
+  padding: 14px 16px; color: #d6d3d1;
+  font-size: .75rem; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; text-align: center;
+}
+.sg-table tbody tr {
+  border-bottom: 1px solid var(--stone-200);
+  transition: background .15s;
+}
+.sg-table tbody tr:last-child { border-bottom: none; }
+.sg-table tbody tr:hover { background: #fff7ed; }
+.sg-table tbody tr.sg-highlighted {
+  background: linear-gradient(90deg, #fff7ed, #fed7aa20);
+  outline: 2px solid #f97316;
+}
+.sg-table tbody td {
+  padding: 11px 16px; text-align: center;
+  font-size: .85rem; color: var(--stone-700); font-weight: 500;
+}
+.sg-table tbody tr.sg-highlighted td { font-weight: 700; color: var(--stone-900); }
+.sg-table-eu  { font-weight: 800; color: var(--stone-900); font-size: .95rem; }
+.sg-match-tag {
+  display: none;
+  background: #f97316; color: #fff;
+  font-size: .65rem; font-weight: 800; padding: 2px 7px;
+  border-radius: 999px; margin-left: 6px; vertical-align: middle;
+}
+.sg-highlighted .sg-match-tag { display: inline; }
+
+/* width guide cards */
+.sg-width-grid {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 12px;
+}
+@media(max-width:480px){ .sg-width-grid { grid-template-columns:1fr; } }
+.sg-width-card {
+  border-radius: 12px; padding: 16px; text-align: center;
+  border: 1.5px solid; cursor: pointer; transition: all .2s;
+}
+.sg-width-card.narrow { border-color: #bfdbfe; background: #eff6ff; }
+.sg-width-card.regular { border-color: #bbf7d0; background: #f0fdf4; }
+.sg-width-card.wide   { border-color: #e9d5ff; background: #fdf4ff; }
+.sg-width-card:hover  { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,.08); }
+.sg-width-emoji { font-size: 1.5rem; margin-bottom: 6px; }
+.sg-width-title { font-size: .85rem; font-weight: 700; color: var(--stone-900); }
+.sg-width-desc  { font-size: .73rem; color: var(--stone-500); margin-top: 3px; line-height: 1.4; }
+.sg-width-code  { font-size: .68rem; font-weight: 800; letter-spacing: .08em; margin-top: 6px; }
+.narrow .sg-width-code  { color: #1d4ed8; }
+.regular .sg-width-code { color: #15803d; }
+.wide   .sg-width-code  { color: #7e22ce; }
+
+@keyframes sg-fadein {
+  from { opacity:0; transform:translateY(8px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- ═══ HERO ════════════════════════════════════════════════════════════════ -->
+<section class="sg-hero">
+  <div class="sg-hero-eyebrow">📏 Module 2 · Khairul Islam Bhuiya</div>
+  <h1>Find Your <em>Perfect</em> Shoe Fit</h1>
+  <p>Enter your foot length and instantly get your size across all major sizing systems — EU, UK, US, and CM.</p>
+  <div class="sg-stats">
+    <div class="sg-stat"><div class="sg-stat-val">13</div><div class="sg-stat-lbl">Sizes Covered</div></div>
+    <div class="sg-stat"><div class="sg-stat-val">4</div><div class="sg-stat-lbl">Size Systems</div></div>
+    <div class="sg-stat"><div class="sg-stat-val">3</div><div class="sg-stat-lbl">Width Guides</div></div>
+    <div class="sg-stat"><div class="sg-stat-val">EU 35–47</div><div class="sg-stat-lbl">Full Range</div></div>
+  </div>
+</section>
+
+<div class="sg-container">
+  <div class="sg-grid">
+
+    <!-- ── LEFT COLUMN ───────────────────────────────────────────────────── -->
+    <div>
+
+      <!-- Size Finder -->
+      <div class="sg-card">
+        <div class="sg-card-hd">
+          <h2>🔍 Find My Size</h2>
+          <div class="sg-hd-line"></div>
+        </div>
+
+        <!-- Unit toggle -->
+        <div class="sg-unit-tabs">
+          <button class="sg-unit-tab active" id="tab-cm" onclick="setUnit('cm')">CM</button>
+          <button class="sg-unit-tab" id="tab-in" onclick="setUnit('in')">Inches</button>
+          <button class="sg-unit-tab" id="tab-mm" onclick="setUnit('mm')">MM</button>
+        </div>
+
+        <!-- Input -->
+        <div class="sg-input-wrap">
+          <input type="number" id="sg-foot-input"
+                 min="18" max="34" step="0.5"
+                 placeholder="e.g. 26.5"
+                 oninput="onMeasureInput()">
+          <span class="sg-input-unit" id="sg-unit-label">CM</span>
+        </div>
+
+        <!-- Result -->
+        <div class="sg-result" id="sg-result">
+          <div class="sg-result-label">Your Estimated Size</div>
+          <div class="sg-result-size" id="sg-result-size">—</div>
+          <div class="sg-result-alts" id="sg-result-alts"></div>
+          <div class="sg-result-fit">
+            <div style="font-size:.73rem;color:#92400e;margin-bottom:6px;font-weight:600;">RECOMMENDED FIT WIDTH</div>
+            <span class="sg-fit-pill sg-fit-narrow">📐 Narrow (B/C)</span>
+            <span class="sg-fit-pill sg-fit-regular">✅ Regular (D) — Standard</span>
+            <span class="sg-fit-pill sg-fit-wide">↔ Wide (E/EE)</span>
+          </div>
+        </div>
+
+        <!-- Save + checkout -->
+        <button class="sg-save-btn" id="sg-save-btn" onclick="saveSize()">
+          💾 Save This Size to My Profile
+        </button>
+        <div class="sg-saved-badge" id="sg-saved-badge">
+          ✓ Size saved! EU <span id="sg-saved-val">—</span> stored for checkout.
+        </div>
+        <a href="{{ url_for('main.checkout') }}" class="sg-checkout-btn">
+          Proceed to Checkout
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- How to Measure -->
+      <div class="sg-card">
+        <div class="sg-card-hd">
+          <h2>📐 How to Measure</h2>
+          <div class="sg-hd-line"></div>
+        </div>
+        <ol class="sg-measure-steps">
+          <li class="sg-measure-step">
+            <div class="sg-step-num">1</div>
+            <div class="sg-step-txt">Place a blank sheet of paper on a <strong>hard floor</strong> against a wall.</div>
+          </li>
+          <li class="sg-measure-step">
+            <div class="sg-step-num">2</div>
+            <div class="sg-step-txt">Stand with your <strong>heel flat against the wall</strong> on the paper.</div>
+          </li>
+          <li class="sg-measure-step">
+            <div class="sg-step-num">3</div>
+            <div class="sg-step-txt">Mark the <strong>longest point</strong> of your foot (usually the big toe) with a pencil.</div>
+          </li>
+          <li class="sg-measure-step">
+            <div class="sg-step-num">4</div>
+            <div class="sg-step-txt">Measure from the <strong>wall edge to the mark</strong> in centimetres.</div>
+          </li>
+          <li class="sg-measure-step">
+            <div class="sg-step-num">5</div>
+            <div class="sg-step-txt">Measure <strong>both feet</strong> and use the <strong>larger measurement</strong>.</div>
+          </li>
+          <li class="sg-measure-step">
+            <div class="sg-step-num">6</div>
+            <div class="sg-step-txt">Measure in the <strong>afternoon</strong> — feet are slightly larger later in the day.</div>
+          </li>
+        </ol>
+      </div>
+
+      <!-- Width Guide -->
+      <div class="sg-card">
+        <div class="sg-card-hd">
+          <h2>↔ Width Guide</h2>
+          <div class="sg-hd-line"></div>
+        </div>
+        <div class="sg-width-grid">
+          <div class="sg-width-card narrow">
+            <div class="sg-width-emoji">👟</div>
+            <div class="sg-width-title">Narrow</div>
+            <div class="sg-width-desc">Slim fit. Best for slender feet with low arch.</div>
+            <div class="sg-width-code">B / C WIDTH</div>
+          </div>
+          <div class="sg-width-card regular">
+            <div class="sg-width-emoji">👟</div>
+            <div class="sg-width-title">Regular</div>
+            <div class="sg-width-desc">Standard. Fits most people. Recommended default.</div>
+            <div class="sg-width-code">D WIDTH</div>
+          </div>
+          <div class="sg-width-card wide">
+            <div class="sg-width-emoji">👟</div>
+            <div class="sg-width-title">Wide</div>
+            <div class="sg-width-desc">Extra room. Ideal for wider feet or bunions.</div>
+            <div class="sg-width-code">E / EE WIDTH</div>
+          </div>
+        </div>
+        <p style="font-size:.75rem;color:var(--stone-400);margin-top:16px;line-height:1.6;">
+          💡 <strong>Tip:</strong> If your foot spills over the edges of your current shoes or you feel pinching at the sides, consider going one width wider.
+        </p>
+      </div>
+
+    </div><!-- /left -->
+
+    <!-- ── RIGHT COLUMN — Size Chart ─────────────────────────────────────── -->
+    <div>
+      <div class="sg-card" style="padding:0;overflow:hidden;">
+        <div style="padding:24px 28px 20px;">
+          <div class="sg-card-hd" style="margin-bottom:0;">
+            <h2>📊 Full Size Chart</h2>
+            <div class="sg-hd-line"></div>
+          </div>
+          <p style="font-size:.8rem;color:var(--stone-500);margin:8px 0 0;">
+            Enter foot length above to highlight your row automatically.
+          </p>
+        </div>
+        <div class="sg-table-wrap">
+          <table class="sg-table" id="sg-table">
+            <thead>
+              <tr>
+                <th>EU</th>
+                <th>UK</th>
+                <th>US Men</th>
+                <th>US Women</th>
+                <th>Foot Length</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in size_chart %}
+              <tr id="sg-row-{{ row.eu }}">
+                <td class="sg-table-eu">
+                  {{ row.eu }}
+                  <span class="sg-match-tag">YOUR SIZE</span>
+                </td>
+                <td>{{ row.uk }}</td>
+                <td>{{ row.us_m }}</td>
+                <td>{{ row.us_w }}</td>
+                <td>{{ row.cm }} cm</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Fit Tips -->
+      <div class="sg-card">
+        <div class="sg-card-hd">
+          <h2>💡 Fit Tips</h2>
+          <div class="sg-hd-line"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          {% set tips = [
+            ('👆','Thumb Rule','Leave about one thumb-width of space between your longest toe and the shoe tip.'),
+            ('🌙','Measure at Night','Feet swell slightly during the day. Measure in the afternoon or evening.'),
+            ('🧦','Wear Your Socks','Measure with the socks you plan to wear — thickness affects fit.'),
+            ('👣','Use Larger Foot','Most people have one foot slightly larger. Always size for the bigger one.'),
+            ('↕','Half Sizes','If between two sizes, go up half a size for comfort rather than down.'),
+            ('🔄','Break-In Period','New shoes can feel tight for 1–2 weeks. Leather stretches more than synthetics.'),
+          ] %}
+          {% for icon, title, desc in tips %}
+          <div style="display:flex;gap:12px;align-items:flex-start;padding:12px;background:var(--stone-50);border:1px solid var(--stone-200);border-radius:10px;">
+            <span style="font-size:1.2rem;flex-shrink:0;">{{ icon }}</span>
+            <div>
+              <div style="font-size:.85rem;font-weight:700;color:var(--stone-900);margin-bottom:2px;">{{ title }}</div>
+              <div style="font-size:.78rem;color:var(--stone-500);line-height:1.5;">{{ desc }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div><!-- /right -->
+  </div><!-- /grid -->
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function(){
+  'use strict';
+  let activeUnit = 'cm';
+  let foundSize  = null;
+  const FIND_URL = '{{ url_for("main.size_guide_find") }}';
+
+  function setUnit(u) {
+    activeUnit = u;
+    ['cm','in','mm'].forEach(x => {
+      document.getElementById('tab-' + x).classList.toggle('active', x === u);
+    });
+    document.getElementById('sg-unit-label').textContent = u.toUpperCase();
+    document.getElementById('sg-foot-input').value = '';
+    document.getElementById('sg-result').style.display = 'none';
+    document.getElementById('sg-save-btn').style.display = 'none';
+    clearHighlight();
+  }
+  window.setUnit = setUnit;
+
+  function toCm(val, unit) {
+    if (unit === 'in') return val * 2.54;
+    if (unit === 'mm') return val / 10;
+    return val;
+  }
+
+  function onMeasureInput() {
+    const raw = parseFloat(document.getElementById('sg-foot-input').value);
+    if (!raw || raw <= 0) {
+      document.getElementById('sg-result').style.display = 'none';
+      document.getElementById('sg-save-btn').style.display = 'none';
+      clearHighlight(); return;
+    }
+    const cm = toCm(raw, activeUnit);
+    if (cm < 18 || cm > 34) {
+      document.getElementById('sg-result').style.display = 'none';
+      clearHighlight(); return;
+    }
+    querySize(cm);
+  }
+  window.onMeasureInput = onMeasureInput;
+
+  function querySize(cm) {
+    fetch(FIND_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cm })
+    })
+    .then(r => r.json())
+    .then(d => {
+      if (d.success) {
+        foundSize = d.size;
+        showResult(foundSize);
+        highlightRow(foundSize.eu);
+      }
+    })
+    .catch(() => {});
+  }
+
+  function showResult(s) {
+    document.getElementById('sg-result-size').textContent = 'EU ' + s.eu;
+    document.getElementById('sg-result-alts').innerHTML =
+      `<span>UK ${s.uk}</span><span>US Men ${s.us_m}</span><span>US Women ${s.us_w}</span><span>${s.cm} cm</span>`;
+    document.getElementById('sg-result').style.display = 'block';
+    document.getElementById('sg-save-btn').style.display = 'block';
+  }
+
+  function highlightRow(eu) {
+    clearHighlight();
+    const row = document.getElementById('sg-row-' + eu);
+    if (row) {
+      row.classList.add('sg-highlighted');
+      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+  function clearHighlight() {
+    document.querySelectorAll('.sg-highlighted').forEach(r => r.classList.remove('sg-highlighted'));
+  }
+
+  function saveSize() {
+    if (!foundSize) return;
+    document.getElementById('sg-save-btn').style.display = 'none';
+    document.getElementById('sg-saved-val').textContent = foundSize.eu;
+    document.getElementById('sg-saved-badge').style.display = 'flex';
+  }
+  window.saveSize = saveSize;
+
+  // Restore session-saved size
+  {% if session.get('shoe_size_eu') %}
+  foundSize = {
+    eu: {{ session.shoe_size_eu }},
+    uk: {{ session.shoe_size_uk }},
+    us_m: {{ session.shoe_size_us_m }},
+    us_w: {{ session.shoe_size_us_w }},
+    cm: {{ session.shoe_size_cm }},
+  };
+  showResult(foundSize);
+  highlightRow(foundSize.eu);
+  document.getElementById('sg-save-btn').style.display = 'none';
+  document.getElementById('sg-saved-val').textContent = foundSize.eu;
+  document.getElementById('sg-saved-badge').style.display = 'flex';
+  {% endif %}
+})();
+</script>
+{% endblock %}

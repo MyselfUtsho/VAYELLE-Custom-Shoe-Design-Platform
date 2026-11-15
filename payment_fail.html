@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Payment Failed — Try Again | VAYELLE{% endblock %}
+{% block extra_head %}
+<style>
+.pf-page { min-height:80vh; display:flex; align-items:center; justify-content:center; background:var(--stone-50); padding:40px 20px; }
+.pf-card { background:#fff; border-radius:24px; max-width:520px; width:100%; overflow:hidden; box-shadow:0 8px 40px rgba(0,0,0,.08); border:1.5px solid #fecaca; }
+.pf-top { background:linear-gradient(135deg,#fef2f2,#ffe4e6); padding:40px 32px; text-align:center; border-bottom:1.5px solid #fecaca; }
+.pf-icon { width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg,#ef4444,#dc2626); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; box-shadow:0 8px 24px rgba(239,68,68,.35); animation:pf-shake .5s ease; }
+.pf-icon svg { color:#fff; }
+.pf-top h1 { font-size:1.6rem; font-weight:800; color:#991b1b; margin:0 0 6px; }
+.pf-top p  { color:#b91c1c; font-size:.9rem; margin:0; }
+.pf-body { padding:28px 32px; }
+.pf-reason { background:#fef2f2; border:1px solid #fecaca; border-radius:12px; padding:14px 16px; margin-bottom:24px; font-size:.85rem; color:#dc2626; }
+.pf-tips { display:flex; flex-direction:column; gap:8px; margin-bottom:24px; }
+.pf-tip { display:flex; gap:10px; align-items:flex-start; padding:10px 12px; background:var(--stone-50); border:1px solid var(--stone-200); border-radius:10px; font-size:.82rem; color:var(--stone-700); }
+.pf-actions { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+@media(max-width:420px){ .pf-actions { grid-template-columns:1fr; } }
+.pf-btn-primary { display:flex; align-items:center; justify-content:center; gap:7px; padding:13px; border-radius:12px; font-weight:700; font-size:.88rem; background:linear-gradient(135deg,#f97316,#ea580c); color:#fff; text-decoration:none; transition:all .2s; }
+.pf-btn-primary:hover { transform:translateY(-2px); }
+.pf-btn-outline { display:flex; align-items:center; justify-content:center; gap:7px; padding:13px; border-radius:12px; font-weight:700; font-size:.88rem; border:1.5px solid var(--stone-300); color:var(--stone-700); background:#fff; text-decoration:none; transition:all .2s; }
+.pf-btn-outline:hover { border-color:#f97316; color:#f97316; }
+@keyframes pf-shake { 0%,100%{transform:translateX(0);} 20%,60%{transform:translateX(-8px);} 40%,80%{transform:translateX(8px);} }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pf-page">
+  <div class="pf-card">
+    <div class="pf-top">
+      <div class="pf-icon">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+        </svg>
+      </div>
+      <h1>Payment Failed</h1>
+      <p>Your transaction could not be completed.</p>
+    </div>
+    <div class="pf-body">
+      <div class="pf-reason">❌ {{ reason }}</div>
+
+      <p style="font-size:.82rem;font-weight:700;color:var(--stone-700);margin:0 0 10px;">Common reasons & fixes:</p>
+      <div class="pf-tips">
+        <div class="pf-tip"><span>💳</span>Double-check your card number, expiry, and CVV are correct.</div>
+        <div class="pf-tip"><span>💰</span>Ensure your account has sufficient balance or credit limit.</div>
+        <div class="pf-tip"><span>🌐</span>Check your internet connection and try again.</div>
+        <div class="pf-tip"><span>🏦</span>Try a different payment method (mobile banking, etc.).</div>
+        <div class="pf-tip"><span>🧪</span>In sandbox mode, use test card <code style="background:var(--stone-200);padding:1px 4px;border-radius:3px;">4111 1111 1111 1111</code>.</div>
+      </div>
+
+      <div class="pf-actions">
+        <a href="{{ url_for('main.checkout') }}" class="pf-btn-primary">🔄 Try Again</a>
+        <a href="{{ url_for('main.index') }}" class="pf-btn-outline">🏠 Go Home</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
