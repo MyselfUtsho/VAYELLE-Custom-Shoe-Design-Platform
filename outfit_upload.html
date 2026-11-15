@@ -1,0 +1,864 @@
+{% extends 'base.html' %}
+{% block title %}AI Outfit Match — Upload Your Look | VAYELLE{% endblock %}
+
+{% block extra_head %}
+<style>
+/* ═══════════════════════════════════════════════════════════════════════════
+   VAYELLE — Outfit Upload Page  (Khairul Islam Bhuiya · Module 1)
+   World-class upload experience with animations, validation & preview.
+═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Page shell ─────────────────────────────────────────────────────────── */
+.ou-page { background: var(--stone-50); min-height: 100vh; }
+
+/* ─── Hero Banner ────────────────────────────────────────────────────────── */
+.ou-hero {
+  background: linear-gradient(135deg, #1c1917 0%, #292524 40%, #3b1f0e 70%, #1c1917 100%);
+  padding: 72px 24px 80px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.ou-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 50%, rgba(249,115,22,.18) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 60% at 80% 30%, rgba(234,88,12,.12) 0%, transparent 70%);
+}
+.ou-hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(249,115,22,.15);
+  border: 1px solid rgba(249,115,22,.35);
+  color: #fb923c; font-size: .75rem; font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase;
+  padding: 6px 16px; border-radius: 999px;
+  margin-bottom: 20px; position: relative;
+}
+.ou-hero-eyebrow span { animation: pulse-dot 2s infinite; }
+.ou-hero h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800; color: #fff;
+  letter-spacing: -.02em; line-height: 1.1;
+  margin: 0 0 16px; position: relative;
+}
+.ou-hero h1 em { color: #f97316; font-style: normal; }
+.ou-hero-sub {
+  font-size: clamp(.9rem, 2vw, 1.1rem);
+  color: #a8a29e; max-width: 520px;
+  margin: 0 auto 32px; position: relative; line-height: 1.6;
+}
+
+/* Steps strip */
+.ou-steps {
+  display: flex; align-items: center; justify-content: center;
+  gap: 0; position: relative; flex-wrap: wrap; row-gap: 12px;
+}
+.ou-step {
+  display: flex; align-items: center; gap: 8px;
+  color: #57534e; font-size: .8rem; font-weight: 600;
+  letter-spacing: .04em; text-transform: uppercase;
+}
+.ou-step.active { color: #f97316; }
+.ou-step.done   { color: #22c55e; }
+.ou-step-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .75rem; font-weight: 800;
+  background: rgba(255,255,255,.08);
+  border: 1.5px solid rgba(255,255,255,.12);
+  color: #78716c;
+}
+.ou-step.active .ou-step-num {
+  background: #f97316; border-color: #f97316; color: #fff;
+  box-shadow: 0 0 16px rgba(249,115,22,.5);
+}
+.ou-step.done .ou-step-num {
+  background: #22c55e; border-color: #22c55e; color: #fff;
+}
+.ou-step-line {
+  width: 48px; height: 2px;
+  background: rgba(255,255,255,.1);
+  margin: 0 4px;
+}
+
+/* ─── Main layout ────────────────────────────────────────────────────────── */
+.ou-container {
+  max-width: 860px; margin: 0 auto;
+  padding: 48px 24px 80px;
+}
+
+/* ─── Upload Card ────────────────────────────────────────────────────────── */
+.ou-card {
+  background: #fff;
+  border: 1.5px solid var(--stone-200);
+  border-radius: 20px;
+  padding: 40px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.06);
+}
+
+/* ─── Drop Zone ──────────────────────────────────────────────────────────── */
+.ou-dropzone {
+  border: 2.5px dashed var(--stone-300);
+  border-radius: 16px;
+  padding: 56px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .25s ease;
+  position: relative;
+  background: var(--stone-50);
+  overflow: hidden;
+}
+.ou-dropzone::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(249,115,22,.04), transparent);
+  opacity: 0; transition: opacity .3s;
+}
+.ou-dropzone:hover, .ou-dropzone.drag-active {
+  border-color: #f97316;
+  background: #fff7ed;
+  transform: scale(1.005);
+}
+.ou-dropzone:hover::before, .ou-dropzone.drag-active::before { opacity: 1; }
+.ou-dropzone.drag-active {
+  border-style: solid;
+  box-shadow: 0 0 0 4px rgba(249,115,22,.12), 0 8px 32px rgba(249,115,22,.15);
+}
+
+/* Upload icon ring */
+.ou-icon-ring {
+  width: 88px; height: 88px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fff7ed, #fed7aa);
+  border: 2px solid #fed7aa;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 24px;
+  transition: all .3s ease;
+  position: relative;
+}
+.ou-icon-ring::after {
+  content: '';
+  position: absolute; inset: -6px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(249,115,22,.2);
+  animation: ring-pulse 2.5s ease-in-out infinite;
+}
+.ou-icon-ring svg { color: #f97316; transition: transform .3s; }
+.ou-dropzone:hover .ou-icon-ring svg { transform: translateY(-4px) scale(1.08); }
+
+.ou-dz-title {
+  font-size: 1.25rem; font-weight: 700;
+  color: var(--stone-900); margin-bottom: 6px;
+}
+.ou-dz-sub {
+  font-size: .9rem; color: var(--stone-500); margin-bottom: 20px;
+}
+.ou-dz-browse {
+  color: #f97316; font-weight: 700; text-decoration: underline;
+  text-underline-offset: 3px; cursor: pointer;
+}
+
+/* Format badges */
+.ou-badges {
+  display: flex; gap: 8px; justify-content: center;
+  flex-wrap: wrap; margin-top: 20px;
+}
+.ou-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: 999px;
+  font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+}
+.ou-badge-jpg { background: #fff7ed; color: #ea580c; border: 1px solid #fed7aa; }
+.ou-badge-png { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+.ou-badge-size { background: var(--stone-100); color: var(--stone-600); border: 1px solid var(--stone-200); }
+.ou-badge-paste { background: #f5f3ff; color: #7c3aed; border: 1px solid #ddd6fe; }
+
+/* Hidden file input */
+#ou-file-input { display: none; }
+
+/* ─── Validation Status Bar ──────────────────────────────────────────────── */
+.ou-validation {
+  display: none;
+  gap: 12px; flex-wrap: wrap;
+  margin-top: 20px;
+}
+.ou-val-pill {
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 14px; border-radius: 999px;
+  font-size: .78rem; font-weight: 600;
+  animation: fade-up .3s ease both;
+}
+.ou-val-ok   { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.ou-val-err  { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.ou-val-info { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.ou-val-icon { font-size: 1rem; }
+
+/* ─── Progress Bar ───────────────────────────────────────────────────────── */
+.ou-progress-wrap {
+  display: none; margin-top: 20px;
+  background: var(--stone-100); border-radius: 999px;
+  height: 6px; overflow: hidden;
+}
+.ou-progress-bar {
+  height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, #f97316, #fb923c, #f97316);
+  background-size: 200% 100%;
+  animation: progress-shine 1.5s linear infinite;
+  transition: width .3s ease;
+  width: 0%;
+}
+
+/* ─── Preview Card ───────────────────────────────────────────────────────── */
+.ou-preview {
+  display: none;
+  gap: 24px; align-items: flex-start;
+}
+.ou-preview-img-wrap {
+  position: relative; flex-shrink: 0;
+  width: 180px; height: 180px;
+  border-radius: 14px; overflow: hidden;
+  border: 2px solid var(--stone-200);
+  box-shadow: 0 4px 16px rgba(0,0,0,.1);
+}
+.ou-preview-img-wrap img {
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
+}
+.ou-preview-badge {
+  position: absolute; top: 8px; left: 8px;
+  background: rgba(0,0,0,.65); backdrop-filter: blur(4px);
+  color: #fff; font-size: .65rem; font-weight: 700;
+  padding: 3px 8px; border-radius: 999px; letter-spacing: .05em;
+}
+.ou-preview-info { flex: 1; }
+.ou-preview-info h3 {
+  font-size: 1.1rem; font-weight: 700; color: var(--stone-900);
+  margin: 0 0 4px; word-break: break-all;
+}
+.ou-preview-meta {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;
+}
+.ou-meta-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--stone-100); color: var(--stone-700);
+  border: 1px solid var(--stone-200);
+  padding: 4px 10px; border-radius: 999px;
+  font-size: .75rem; font-weight: 600;
+}
+.ou-preview-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.ou-btn-remove {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 18px; border-radius: 10px;
+  font-size: .82rem; font-weight: 700; cursor: pointer;
+  border: 1.5px solid #fecaca; background: #fef2f2; color: #dc2626;
+  transition: all .2s;
+}
+.ou-btn-remove:hover { background: #fee2e2; border-color: #fca5a5; }
+.ou-btn-change {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 18px; border-radius: 10px;
+  font-size: .82rem; font-weight: 700; cursor: pointer;
+  border: 1.5px solid var(--stone-300); background: #fff; color: var(--stone-700);
+  transition: all .2s;
+}
+.ou-btn-change:hover { border-color: #f97316; color: #f97316; }
+
+/* ─── Success State ──────────────────────────────────────────────────────── */
+.ou-success-banner {
+  display: none;
+  align-items: center; gap: 12px;
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border: 1.5px solid #86efac;
+  border-radius: 14px; padding: 16px 20px;
+  margin-top: 20px; animation: fade-up .4s ease;
+}
+.ou-success-icon {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: #22c55e; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(34,197,94,.35);
+}
+.ou-success-text h4 { margin: 0 0 2px; font-size: .95rem; color: #15803d; font-weight: 700; }
+.ou-success-text p  { margin: 0; font-size: .8rem; color: #16a34a; }
+
+/* ─── CTA Button ─────────────────────────────────────────────────────────── */
+.ou-cta-wrap { text-align: center; margin-top: 28px; }
+.ou-cta {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 16px 40px; border-radius: 14px;
+  font-size: 1rem; font-weight: 800; letter-spacing: .01em;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: #fff; border: none; cursor: pointer;
+  box-shadow: 0 4px 20px rgba(249,115,22,.4);
+  transition: all .25s ease;
+  pointer-events: none; opacity: .45;
+  text-decoration: none;
+}
+.ou-cta.active {
+  pointer-events: auto; opacity: 1;
+  animation: cta-pulse 2.5s ease-in-out infinite;
+}
+.ou-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(249,115,22,.5); }
+.ou-cta svg { transition: transform .25s; }
+.ou-cta:hover svg { transform: translateX(4px); }
+
+/* ─── Error Toast ────────────────────────────────────────────────────────── */
+.ou-error-toast {
+  display: none; align-items: center; gap: 12px;
+  background: #fef2f2; border: 1.5px solid #fecaca;
+  border-radius: 12px; padding: 14px 18px;
+  margin-top: 16px; animation: fade-up .3s ease;
+}
+.ou-error-toast .ou-err-icon { font-size: 1.3rem; flex-shrink: 0; }
+.ou-error-toast .ou-err-msg  { font-size: .85rem; color: #dc2626; font-weight: 600; }
+
+/* ─── Tips Grid ──────────────────────────────────────────────────────────── */
+.ou-tips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 16px; margin-top: 0;
+}
+.ou-tip-card {
+  background: #fff;
+  border: 1.5px solid var(--stone-200);
+  border-radius: 14px; padding: 20px;
+  transition: all .25s;
+}
+.ou-tip-card:hover {
+  border-color: #fed7aa;
+  box-shadow: 0 4px 16px rgba(249,115,22,.1);
+  transform: translateY(-2px);
+}
+.ou-tip-emoji { font-size: 1.75rem; margin-bottom: 10px; }
+.ou-tip-title { font-size: .88rem; font-weight: 700; color: var(--stone-900); margin-bottom: 4px; }
+.ou-tip-desc  { font-size: .78rem; color: var(--stone-500); line-height: 1.5; }
+
+/* ─── Requirements Table ─────────────────────────────────────────────────── */
+.ou-req-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 12px; margin-top: 0;
+}
+.ou-req-row {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--stone-50); border: 1px solid var(--stone-200);
+  border-radius: 10px; padding: 12px 14px;
+}
+.ou-req-label { font-size: .78rem; color: var(--stone-500); font-weight: 500; min-width: 80px; }
+.ou-req-value { font-size: .82rem; color: var(--stone-800); font-weight: 700; }
+
+/* ─── Section Header ─────────────────────────────────────────────────────── */
+.ou-section-hd {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 20px;
+}
+.ou-section-hd h2 {
+  font-size: 1.1rem; font-weight: 700; color: var(--stone-900); margin: 0;
+}
+.ou-section-hd-line {
+  flex: 1; height: 1px; background: var(--stone-200);
+}
+
+/* ─── Keyframe Animations ────────────────────────────────────────────────── */
+@keyframes ring-pulse {
+  0%,100% { transform: scale(1); opacity: .6; }
+  50%      { transform: scale(1.15); opacity: 0; }
+}
+@keyframes pulse-dot {
+  0%,100% { opacity: 1; } 50% { opacity: .4; }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes progress-shine {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes cta-pulse {
+  0%,100% { box-shadow: 0 4px 20px rgba(249,115,22,.4); }
+  50%     { box-shadow: 0 6px 28px rgba(249,115,22,.65); }
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .ou-card { padding: 24px 18px; }
+  .ou-preview { flex-direction: column; }
+  .ou-preview-img-wrap { width: 100%; height: 220px; }
+  .ou-req-grid { grid-template-columns: 1fr; }
+  .ou-step-line { width: 24px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ou-page">
+
+  <!-- ═══ HERO ═══════════════════════════════════════════════════════════════ -->
+  <section class="ou-hero">
+    <div class="ou-hero-eyebrow">
+      <span>●</span> AI-Powered Feature · Module 1
+    </div>
+    <h1>Upload Your <em>Outfit</em><br>Get Perfect Shoe Matches</h1>
+    <p class="ou-hero-sub">
+      Drop a photo of your outfit and our AI engine will analyze your colors,
+      style, and vibe — then recommend shoes that complete the look.
+    </p>
+
+    <!-- Steps -->
+    <div class="ou-steps">
+      <div class="ou-step active">
+        <div class="ou-step-num">1</div> Upload Outfit
+      </div>
+      <div class="ou-step-line"></div>
+      <div class="ou-step">
+        <div class="ou-step-num">2</div> AI Analysis
+      </div>
+      <div class="ou-step-line"></div>
+      <div class="ou-step">
+        <div class="ou-step-num">3</div> Shoe Match
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ MAIN CONTAINER ═════════════════════════════════════════════════════ -->
+  <div class="ou-container">
+
+    <!-- ── Upload Card ──────────────────────────────────────────────────── -->
+    <div class="ou-card">
+      <div class="ou-section-hd">
+        <h2>📤 Upload Your Outfit Photo</h2>
+        <div class="ou-section-hd-line"></div>
+      </div>
+
+      <!-- Drop Zone -->
+      <div class="ou-dropzone" id="ou-dropzone">
+        <div class="ou-icon-ring" id="ou-icon-ring">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.75">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" x2="12" y1="3" y2="15"/>
+          </svg>
+        </div>
+        <p class="ou-dz-title">Drop your outfit image here</p>
+        <p class="ou-dz-sub">
+          or <span class="ou-dz-browse">click to browse</span>
+          &nbsp;·&nbsp; or paste with <kbd style="background:var(--stone-200);padding:1px 5px;border-radius:4px;font-size:.75rem;">Ctrl+V</kbd>
+        </p>
+        <div class="ou-badges">
+          <span class="ou-badge ou-badge-jpg">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+            JPG
+          </span>
+          <span class="ou-badge ou-badge-png">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+            PNG
+          </span>
+          <span class="ou-badge ou-badge-size">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Max 5 MB
+          </span>
+          <span class="ou-badge ou-badge-paste">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+            Paste Supported
+          </span>
+        </div>
+      </div>
+      <input type="file" id="ou-file-input" accept="image/jpeg,image/png">
+
+      <!-- Progress -->
+      <div class="ou-progress-wrap" id="ou-progress-wrap">
+        <div class="ou-progress-bar" id="ou-progress-bar"></div>
+      </div>
+
+      <!-- Error Toast -->
+      <div class="ou-error-toast" id="ou-error-toast">
+        <span class="ou-err-icon">❌</span>
+        <span class="ou-err-msg" id="ou-err-msg">Error</span>
+      </div>
+
+      <!-- Validation Pills -->
+      <div class="ou-validation" id="ou-validation"></div>
+
+      <!-- ── Preview (shown after upload) ───────────────────────────────── -->
+      <div class="ou-preview" id="ou-preview"
+           {% if existing_url %}style="display:flex;"{% endif %}>
+        <div class="ou-preview-img-wrap">
+          <img id="ou-preview-img"
+               src="{{ existing_url or '' }}"
+               alt="Outfit Preview">
+          <span class="ou-preview-badge" id="ou-preview-badge">
+            {{ existing_type or 'IMAGE' }}
+          </span>
+        </div>
+        <div class="ou-preview-info">
+          <h3 id="ou-preview-name">
+            {{ session.get('outfit_filename', 'outfit.jpg') }}
+          </h3>
+          <div class="ou-preview-meta" id="ou-preview-meta">
+            {% if existing_size %}
+              <span class="ou-meta-chip">📦 {{ existing_size }}</span>
+              <span class="ou-meta-chip">✅ Validated</span>
+              <span class="ou-meta-chip">🔒 Saved to server</span>
+            {% endif %}
+          </div>
+          <div class="ou-preview-actions">
+            <button class="ou-btn-remove" onclick="ouRemove()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.5">
+                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+                <path d="M10 11v6"/><path d="M14 11v6"/>
+              </svg>
+              Remove
+            </button>
+            <button class="ou-btn-change" onclick="ouChangeImage()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.5">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>
+              </svg>
+              Change Image
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Success Banner -->
+      <div class="ou-success-banner" id="ou-success-banner"
+           {% if existing_url %}style="display:flex;"{% endif %}>
+        <div class="ou-success-icon">✓</div>
+        <div class="ou-success-text">
+          <h4>Outfit uploaded &amp; validated successfully!</h4>
+          <p>File passed all checks — type, size, and content integrity verified.</p>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="ou-cta-wrap">
+        <a href="{{ url_for('main.explore') }}"
+           class="ou-cta {% if existing_url %}active{% endif %}"
+           id="ou-cta">
+          Continue to AI Analysis
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </a>
+        <p style="font-size:.78rem;color:var(--stone-400);margin-top:10px;">
+          Upload an outfit photo above to continue
+        </p>
+      </div>
+    </div><!-- /ou-card -->
+
+    <!-- ── Tips Grid ─────────────────────────────────────────────────────── -->
+    <div class="ou-card">
+      <div class="ou-section-hd">
+        <h2>📸 Tips for Best Results</h2>
+        <div class="ou-section-hd-line"></div>
+      </div>
+      <div class="ou-tips-grid">
+        <div class="ou-tip-card">
+          <div class="ou-tip-emoji">☀️</div>
+          <div class="ou-tip-title">Natural Lighting</div>
+          <div class="ou-tip-desc">Shoot near a window or outdoors. Avoid harsh shadows or dim indoor lights.</div>
+        </div>
+        <div class="ou-tip-card">
+          <div class="ou-tip-emoji">👕</div>
+          <div class="ou-tip-title">Full Outfit Visible</div>
+          <div class="ou-tip-desc">Capture the whole look — top, bottom, and accessories for precise color analysis.</div>
+        </div>
+        <div class="ou-tip-card">
+          <div class="ou-tip-emoji">🎨</div>
+          <div class="ou-tip-title">No Heavy Filters</div>
+          <div class="ou-tip-desc">Raw or lightly edited photos give the AI accurate color data. Avoid B&amp;W or oversaturated filters.</div>
+        </div>
+        <div class="ou-tip-card">
+          <div class="ou-tip-emoji">🧱</div>
+          <div class="ou-tip-title">Clean Background</div>
+          <div class="ou-tip-desc">A plain wall or neutral background helps isolate outfit colors for sharper recommendations.</div>
+        </div>
+        <div class="ou-tip-card">
+          <div class="ou-tip-emoji">👟</div>
+          <div class="ou-tip-title">Include Current Shoes</div>
+          <div class="ou-tip-desc">Wearing shoes in the photo lets the AI understand your existing style baseline.</div>
+        </div>
+        <div class="ou-tip-card">
+          <div class="ou-tip-emoji">📐</div>
+          <div class="ou-tip-title">Portrait Orientation</div>
+          <div class="ou-tip-desc">Vertical shots capture more of the outfit. Landscape crops may miss key styling details.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── File Requirements ──────────────────────────────────────────────── -->
+    <div class="ou-card">
+      <div class="ou-section-hd">
+        <h2>📋 File Requirements &amp; Validation</h2>
+        <div class="ou-section-hd-line"></div>
+      </div>
+      <div class="ou-req-grid">
+        <div class="ou-req-row">
+          <span class="ou-req-label">Formats</span>
+          <span class="ou-req-value">JPG / JPEG / PNG</span>
+        </div>
+        <div class="ou-req-row">
+          <span class="ou-req-label">Max Size</span>
+          <span class="ou-req-value">5 MB</span>
+        </div>
+        <div class="ou-req-row">
+          <span class="ou-req-label">Type Check</span>
+          <span class="ou-req-value">Extension + Magic Bytes</span>
+        </div>
+        <div class="ou-req-row">
+          <span class="ou-req-label">Storage</span>
+          <span class="ou-req-value">Secure Server Upload</span>
+        </div>
+        <div class="ou-req-row">
+          <span class="ou-req-label">Session</span>
+          <span class="ou-req-value">Persisted for Analysis</span>
+        </div>
+        <div class="ou-req-row">
+          <span class="ou-req-label">Interaction</span>
+          <span class="ou-req-value">Drag · Click · Paste</span>
+        </div>
+      </div>
+      <p style="margin-top:16px;font-size:.78rem;color:var(--stone-400);line-height:1.6;">
+        ⚠️ All uploads are validated server-side: file extension, MIME type, and magic-byte signature
+        are all checked independently to prevent disguised or malicious files. Files are stored with a
+        random UUID filename to prevent collisions.
+      </p>
+    </div>
+
+  </div><!-- /ou-container -->
+</div><!-- /ou-page -->
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* ════════════════════════════════════════════════════════════════════════════
+   VAYELLE Outfit Upload — Interactive Controller
+   Khairul Islam Bhuiya · Module 1 · CSE471 Fall 2026
+════════════════════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  /* ── DOM refs ─────────────────────────────────────────────────────────── */
+  const dropzone    = document.getElementById('ou-dropzone');
+  const fileInput   = document.getElementById('ou-file-input');
+  const progressW   = document.getElementById('ou-progress-wrap');
+  const progressBar = document.getElementById('ou-progress-bar');
+  const valContainer= document.getElementById('ou-validation');
+  const errorToast  = document.getElementById('ou-error-toast');
+  const errMsg      = document.getElementById('ou-err-msg');
+  const preview     = document.getElementById('ou-preview');
+  const previewImg  = document.getElementById('ou-preview-img');
+  const previewName = document.getElementById('ou-preview-name');
+  const previewMeta = document.getElementById('ou-preview-meta');
+  const previewBadge= document.getElementById('ou-preview-badge');
+  const successBnr  = document.getElementById('ou-success-banner');
+  const cta         = document.getElementById('ou-cta');
+
+  /* ── Constants ───────────────────────────────────────────────────────── */
+  const MAX_SIZE   = 5 * 1024 * 1024;
+  const ALLOWED    = ['image/jpeg', 'image/png'];
+  const UPLOAD_URL = '{{ url_for("main.outfit_upload") }}';
+  const CLEAR_URL  = '{{ url_for("main.outfit_upload_clear") }}';
+
+  /* ── Helpers ─────────────────────────────────────────────────────────── */
+  function fmtSize(n) {
+    return n < 1048576
+      ? (n / 1024).toFixed(1) + ' KB'
+      : (n / 1048576).toFixed(2) + ' MB';
+  }
+
+  function showError(msg) {
+    hideProgress();
+    errorToast.style.display = 'flex';
+    errMsg.textContent = msg;
+    clearValidation();
+  }
+
+  function hideError() { errorToast.style.display = 'none'; }
+
+  function showProgress() {
+    progressW.style.display = 'block';
+    progressBar.style.width = '0%';
+    // Animate to 85% smoothly, server response will finish it
+    let w = 0;
+    const iv = setInterval(() => {
+      w = Math.min(w + (w < 70 ? 4 : 1), 85);
+      progressBar.style.width = w + '%';
+      if (w >= 85) clearInterval(iv);
+    }, 60);
+    return iv;
+  }
+
+  function finishProgress() {
+    progressBar.style.width = '100%';
+    setTimeout(() => { progressW.style.display = 'none'; }, 600);
+  }
+
+  function hideProgress() { progressW.style.display = 'none'; }
+
+  function clearValidation() {
+    valContainer.style.display = 'none';
+    valContainer.innerHTML = '';
+  }
+
+  function addPill(cls, icon, text) {
+    valContainer.style.display = 'flex';
+    const pill = document.createElement('div');
+    pill.className = 'ou-val-pill ' + cls;
+    pill.innerHTML = `<span class="ou-val-icon">${icon}</span> ${text}`;
+    valContainer.appendChild(pill);
+  }
+
+  function showClientValidation(file) {
+    clearValidation();
+    const typeOk = ALLOWED.includes(file.type);
+    const sizeOk = file.size <= MAX_SIZE;
+    addPill(typeOk ? 'ou-val-ok' : 'ou-val-err', typeOk ? '✓' : '✗',
+            typeOk ? `Format: ${file.type.split('/')[1].toUpperCase()}` : 'Invalid format (JPG/PNG only)');
+    addPill(sizeOk ? 'ou-val-ok' : 'ou-val-err', sizeOk ? '✓' : '✗',
+            sizeOk ? `Size: ${fmtSize(file.size)}` : `Too large (${fmtSize(file.size)} — max 5 MB)`);
+    addPill('ou-val-info', 'ℹ', `Filename: ${file.name}`);
+  }
+
+  function showUploadedState(data) {
+    hideError();
+    clearValidation();
+    addPill('ou-val-ok', '✓', `Format: ${data.file_type} — verified by magic bytes`);
+    addPill('ou-val-ok', '✓', `Size: ${data.size_formatted} — within 5 MB limit`);
+    addPill('ou-val-ok', '✓', 'Content integrity: valid image signature');
+    addPill('ou-val-ok', '🔒', 'Stored securely on server with UUID filename');
+
+    previewImg.src = data.image_url;
+    previewName.textContent = data.filename;
+    previewBadge.textContent = data.file_type;
+    previewMeta.innerHTML =
+      `<span class="ou-meta-chip">📦 ${data.size_formatted}</span>
+       <span class="ou-meta-chip">🖼 ${data.file_type}</span>
+       <span class="ou-meta-chip">✅ Validated</span>
+       <span class="ou-meta-chip">🔒 Saved to server</span>`;
+
+    preview.style.display    = 'flex';
+    successBnr.style.display = 'flex';
+    cta.classList.add('active');
+    dropzone.style.display   = 'none';
+  }
+
+  /* ── File processing ──────────────────────────────────────────────────── */
+  function processFile(file) {
+    if (!file) return;
+    hideError();
+
+    // Client-side checks first (instant feedback)
+    if (!ALLOWED.includes(file.type)) {
+      showClientValidation(file);
+      showError('Only JPG and PNG images are accepted.');
+      return;
+    }
+    if (file.size > MAX_SIZE) {
+      showClientValidation(file);
+      showError(`File is too large (${fmtSize(file.size)}). Maximum is 5 MB.`);
+      return;
+    }
+
+    showClientValidation(file);
+    const ivId = showProgress();
+
+    // Build form data for server upload
+    const fd = new FormData();
+    fd.append('outfit_image', file);
+
+    fetch(UPLOAD_URL, {
+      method: 'POST',
+      body: fd,
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json().then(d => ({ status: r.status, data: d })))
+    .then(({ status, data }) => {
+      clearInterval(ivId);
+      finishProgress();
+      if (data.success) {
+        showUploadedState(data);
+      } else {
+        showError(data.error || 'Upload failed. Please try again.');
+        clearValidation();
+      }
+    })
+    .catch(() => {
+      clearInterval(ivId);
+      hideProgress();
+      showError('Network error. Please check your connection and try again.');
+    });
+  }
+
+  /* ── Drop Zone events ─────────────────────────────────────────────────── */
+  dropzone.addEventListener('click', () => fileInput.click());
+
+  dropzone.addEventListener('dragover', e => {
+    e.preventDefault();
+    dropzone.classList.add('drag-active');
+  });
+  dropzone.addEventListener('dragleave', e => {
+    if (!dropzone.contains(e.relatedTarget))
+      dropzone.classList.remove('drag-active');
+  });
+  dropzone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropzone.classList.remove('drag-active');
+    const file = e.dataTransfer.files[0];
+    if (file) processFile(file);
+  });
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) processFile(fileInput.files[0]);
+    fileInput.value = '';      // allow re-selecting same file
+  });
+
+  /* ── Clipboard paste (Ctrl+V) ─────────────────────────────────────────── */
+  document.addEventListener('paste', e => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of items) {
+      if (item.kind === 'file' && ALLOWED.includes(item.type)) {
+        processFile(item.getAsFile());
+        break;
+      }
+    }
+  });
+
+  /* ── Remove / Change ──────────────────────────────────────────────────── */
+  window.ouRemove = function () {
+    fetch(CLEAR_URL, {
+      method: 'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    }).finally(() => {
+      preview.style.display    = 'none';
+      successBnr.style.display = 'none';
+      cta.classList.remove('active');
+      dropzone.style.display   = '';
+      clearValidation(); hideError(); hideProgress();
+      previewImg.src = '';
+    });
+  };
+
+  window.ouChangeImage = function () {
+    ouRemove();
+    setTimeout(() => fileInput.click(), 300);
+  };
+
+  /* ── Restore existing session image ──────────────────────────────────── */
+  {% if existing_url %}
+    dropzone.style.display = 'none';
+    cta.classList.add('active');
+  {% endif %}
+
+})();
+</script>
+{% endblock %}
