@@ -1,0 +1,350 @@
+{% extends 'base.html' %}
+{% block title %}Checkout — Secure Order | VAYELLE{% endblock %}
+{% block extra_head %}
+<style>
+.ck-hero { background: linear-gradient(135deg,#1c1917,#292524,#1a0a00); padding:52px 24px 60px; text-align:center; position:relative; overflow:hidden; }
+.ck-hero::before { content:''; position:absolute; inset:0; background: radial-gradient(ellipse 60% 50% at 25% 50%,rgba(249,115,22,.14),transparent 70%); }
+.ck-hero h1 { font-size:clamp(1.8rem,4vw,2.8rem); font-weight:800; color:#fff; margin:0 0 10px; position:relative; letter-spacing:-.02em; }
+.ck-hero h1 em { color:#f97316; font-style:normal; }
+.ck-hero p { color:#a8a29e; font-size:.95rem; position:relative; margin:0; }
+.ck-secure { display:inline-flex; align-items:center; gap:6px; margin-bottom:16px; background:rgba(34,197,94,.12); border:1px solid rgba(34,197,94,.3); color:#22c55e; font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; padding:5px 14px; border-radius:999px; position:relative; }
+
+/* layout */
+.ck-container { max-width:1060px; margin:0 auto; padding:40px 24px 80px; }
+.ck-layout { display:grid; grid-template-columns:1fr 380px; gap:28px; align-items:start; }
+@media(max-width:820px){ .ck-layout { grid-template-columns:1fr; } }
+
+/* cards */
+.ck-card { background:#fff; border:1.5px solid var(--stone-200); border-radius:18px; padding:28px; box-shadow:0 4px 20px rgba(0,0,0,.05); margin-bottom:20px; }
+.ck-card-hd { display:flex; align-items:center; gap:10px; margin-bottom:22px; }
+.ck-card-hd h2 { font-size:1rem; font-weight:700; color:var(--stone-900); margin:0; }
+.ck-hd-line { flex:1; height:1px; background:var(--stone-200); }
+
+/* form */
+.ck-form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media(max-width:500px){ .ck-form-row { grid-template-columns:1fr; } }
+.ck-form-group { margin-bottom:14px; }
+.ck-label { display:block; font-size:.75rem; font-weight:700; color:var(--stone-600); letter-spacing:.05em; text-transform:uppercase; margin-bottom:6px; }
+.ck-input {
+  width:100%; padding:11px 14px; border:1.5px solid var(--stone-200); border-radius:10px;
+  font-size:.9rem; color:var(--stone-900); outline:none; transition:border-color .2s, box-shadow .2s;
+  background:var(--stone-50); box-sizing:border-box;
+}
+.ck-input:focus { border-color:#f97316; box-shadow:0 0 0 3px rgba(249,115,22,.12); background:#fff; }
+.ck-input.error { border-color:#ef4444; box-shadow:0 0 0 3px rgba(239,68,68,.1); }
+
+/* size display */
+.ck-size-box {
+  display:flex; align-items:center; gap:16px; padding:16px;
+  background:linear-gradient(135deg,#fff7ed,#fff); border:1.5px solid #fed7aa;
+  border-radius:12px;
+}
+.ck-size-eu { font-size:2.5rem; font-weight:900; color:#f97316; line-height:1; }
+.ck-size-alts { font-size:.78rem; color:#92400e; }
+.ck-size-alts span { display:block; }
+.ck-size-missing { font-size:.85rem; color:var(--stone-500); }
+.ck-size-missing a { color:#f97316; font-weight:600; text-decoration:none; }
+
+/* shoe selector */
+.ck-shoes-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; }
+.ck-shoe-card {
+  border:2px solid var(--stone-200); border-radius:12px; padding:12px; cursor:pointer;
+  transition:all .2s; text-align:center;
+}
+.ck-shoe-card:hover { border-color:#fb923c; }
+.ck-shoe-card.selected { border-color:#f97316; background:#fff7ed; box-shadow:0 0 0 3px rgba(249,115,22,.15); }
+.ck-shoe-card img { width:100%; height:70px; object-fit:cover; border-radius:8px; margin-bottom:8px; }
+.ck-shoe-card .ck-shoe-name { font-size:.75rem; font-weight:700; color:var(--stone-800); }
+.ck-shoe-card .ck-shoe-price { font-size:.7rem; color:#f97316; font-weight:700; }
+
+/* delivery */
+.ck-delivery-opts { display:flex; flex-direction:column; gap:10px; }
+.ck-delivery-opt {
+  display:flex; align-items:center; gap:14px; padding:14px 16px;
+  border:1.5px solid var(--stone-200); border-radius:12px; cursor:pointer; transition:all .2s;
+}
+.ck-delivery-opt:hover { border-color:#fb923c; }
+.ck-delivery-opt.selected { border-color:#f97316; background:#fff7ed; }
+.ck-delivery-opt input[type=radio] { accent-color:#f97316; width:16px; height:16px; cursor:pointer; }
+.ck-delivery-icon { font-size:1.4rem; }
+.ck-delivery-info strong { font-size:.88rem; color:var(--stone-900); display:block; }
+.ck-delivery-info span { font-size:.75rem; color:var(--stone-500); }
+.ck-delivery-price { margin-left:auto; font-weight:800; color:#f97316; font-size:.9rem; }
+
+/* ORDER SUMMARY sidebar */
+.ck-summary { background:#fff; border:1.5px solid var(--stone-200); border-radius:18px; padding:24px; box-shadow:0 4px 20px rgba(0,0,0,.05); position:sticky; top:90px; }
+.ck-summary h3 { font-size:1rem; font-weight:700; margin:0 0 18px; color:var(--stone-900); }
+.ck-sum-shoe {
+  display:flex; gap:12px; align-items:center; padding-bottom:16px;
+  border-bottom:1px solid var(--stone-200); margin-bottom:16px;
+}
+.ck-sum-shoe-img { width:70px; height:52px; border-radius:8px; object-fit:cover; background:var(--stone-100); flex-shrink:0; }
+.ck-sum-shoe-name { font-size:.88rem; font-weight:700; color:var(--stone-900); }
+.ck-sum-shoe-sub  { font-size:.73rem; color:var(--stone-500); margin-top:2px; }
+.ck-sum-line { display:flex; justify-content:space-between; padding:7px 0; font-size:.83rem; color:var(--stone-600); border-bottom:1px solid var(--stone-100); }
+.ck-sum-line:last-of-type { border-bottom:none; }
+.ck-sum-total { display:flex; justify-content:space-between; padding:14px 0 0; font-size:1.05rem; font-weight:800; color:var(--stone-900); border-top:2px solid var(--stone-200); margin-top:4px; }
+.ck-sum-total span:last-child { color:#f97316; }
+.ck-pay-btn {
+  width:100%; padding:15px; border-radius:13px; margin-top:18px;
+  background:linear-gradient(135deg,#f97316,#ea580c); color:#fff;
+  font-weight:800; font-size:.95rem; border:none; cursor:pointer;
+  box-shadow:0 4px 18px rgba(249,115,22,.4); transition:all .2s;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.ck-pay-btn:hover { transform:translateY(-2px); box-shadow:0 7px 24px rgba(249,115,22,.5); }
+.ck-pay-btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+.ck-secure-note { font-size:.72rem; color:var(--stone-400); text-align:center; margin-top:10px; display:flex; align-items:center; justify-content:center; gap:5px; }
+.ck-ssl-badge {
+  display:inline-flex; align-items:center; gap:6px; margin-top:10px;
+  background:var(--stone-50); border:1px solid var(--stone-200);
+  border-radius:8px; padding:8px 12px; width:100%; box-sizing:border-box; justify-content:center;
+}
+.ck-ssl-badge span { font-size:.72rem; font-weight:700; color:var(--stone-600); }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="ck-hero">
+  <div class="ck-secure">🔒 SSL Secured Checkout</div>
+  <h1>Complete Your <em>Order</em></h1>
+  <p>Powered by SSLCommerz Sandbox · All transactions are simulated in test mode</p>
+</section>
+
+<div class="ck-container">
+  <form method="POST" action="{{ url_for('main.payment_initiate') }}" id="ck-form">
+    <div class="ck-layout">
+
+      <!-- ── LEFT: Forms ─────────────────────────────────────────────────── -->
+      <div>
+
+        <!-- Shoe Selection -->
+        <div class="ck-card">
+          <div class="ck-card-hd"><h2>👟 Select Your Shoe</h2><div class="ck-hd-line"></div></div>
+          {% if shoes %}
+          <div class="ck-shoes-grid" id="ck-shoes-grid">
+            {% for shoe in shoes %}
+            <div class="ck-shoe-card {% if loop.first %}selected{% endif %}"
+                 onclick="selectShoe(this, '{{ shoe.shoe_name }}', {{ shoe.base_price }}, '{{ shoe.image_url or '' }}')"
+                 data-name="{{ shoe.shoe_name }}" data-price="{{ shoe.base_price }}"
+                 data-img="{{ shoe.image_url or '' }}">
+              {% if shoe.image_url and 'cloudinary' in shoe.image_url %}
+              <img src="{{ shoe.image_url }}" alt="{{ shoe.shoe_name }}" onerror="this.style.display='none'">
+              {% else %}
+              <div style="width:100%;height:70px;background:linear-gradient(135deg,var(--stone-200),var(--stone-100));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:8px;">👟</div>
+              {% endif %}
+              <div class="ck-shoe-name">{{ shoe.shoe_name }}</div>
+              <div class="ck-shoe-price">৳{{ '{:,.0f}'.format(shoe.base_price) }}</div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p style="color:var(--stone-400);font-size:.85rem;">No shoes in inventory yet. <a href="{{ url_for('main.explore') }}" style="color:#f97316;">Browse catalog →</a></p>
+          {% endif %}
+          <input type="hidden" name="shoe_name" id="ck-shoe-name" value="{{ shoes[0].shoe_name if shoes else 'Custom Shoe' }}">
+        </div>
+
+        <!-- Shoe Size -->
+        <div class="ck-card">
+          <div class="ck-card-hd"><h2>📏 Shoe Size</h2><div class="ck-hd-line"></div></div>
+          {% if saved_size.eu %}
+          <div class="ck-size-box">
+            <div class="ck-size-eu">EU {{ saved_size.eu }}</div>
+            <div class="ck-size-alts">
+              <span>UK {{ saved_size.uk }}</span>
+              <span>US Men {{ saved_size.us_m }} / Women {{ saved_size.us_w }}</span>
+              <span>Foot length: {{ saved_size.cm }} cm</span>
+            </div>
+          </div>
+          <a href="{{ url_for('main.size_guide') }}" style="display:inline-block;margin-top:10px;font-size:.78rem;color:#f97316;font-weight:600;text-decoration:none;">← Change size</a>
+          {% else %}
+          <div class="ck-size-missing">
+            ⚠ No size saved yet.
+            <a href="{{ url_for('main.size_guide') }}">Find your size in the Size Guide →</a>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Shipping Info -->
+        <div class="ck-card">
+          <div class="ck-card-hd"><h2>🚚 Shipping Information</h2><div class="ck-hd-line"></div></div>
+          <div class="ck-form-row">
+            <div class="ck-form-group">
+              <label class="ck-label">Full Name *</label>
+              <input class="ck-input" type="text" name="cus_name" id="ck-name"
+                     placeholder="Your full name" required
+                     value="{{ session.get('user_name', '') }}">
+            </div>
+            <div class="ck-form-group">
+              <label class="ck-label">Email *</label>
+              <input class="ck-input" type="email" name="cus_email" id="ck-email"
+                     placeholder="email@example.com" required>
+            </div>
+          </div>
+          <div class="ck-form-row">
+            <div class="ck-form-group">
+              <label class="ck-label">Phone *</label>
+              <input class="ck-input" type="tel" name="cus_phone" id="ck-phone"
+                     placeholder="+880 1XXX-XXXXXX" required>
+            </div>
+            <div class="ck-form-group">
+              <label class="ck-label">City</label>
+              <input class="ck-input" type="text" name="cus_city" placeholder="Dhaka" value="Dhaka">
+            </div>
+          </div>
+          <div class="ck-form-group">
+            <label class="ck-label">Delivery Address *</label>
+            <textarea class="ck-input" name="cus_address" id="ck-address" rows="3"
+                      placeholder="House #, Road #, Area, City" required style="resize:vertical;"></textarea>
+          </div>
+        </div>
+
+        <!-- Delivery Options -->
+        <div class="ck-card">
+          <div class="ck-card-hd"><h2>📦 Delivery Option</h2><div class="ck-hd-line"></div></div>
+          <div class="ck-delivery-opts" id="ck-delivery-opts">
+            <label class="ck-delivery-opt selected" onclick="selectDelivery(this, 0, 'Standard')">
+              <input type="radio" name="delivery_type" value="Standard" checked>
+              <span class="ck-delivery-icon">📬</span>
+              <div class="ck-delivery-info">
+                <strong>Standard Delivery</strong>
+                <span>5–7 business days</span>
+              </div>
+              <span class="ck-delivery-price">FREE</span>
+            </label>
+            <label class="ck-delivery-opt" onclick="selectDelivery(this, 150, 'Express')">
+              <input type="radio" name="delivery_type" value="Express">
+              <span class="ck-delivery-icon">⚡</span>
+              <div class="ck-delivery-info">
+                <strong>Express Delivery</strong>
+                <span>2–3 business days</span>
+              </div>
+              <span class="ck-delivery-price">৳150</span>
+            </label>
+            <label class="ck-delivery-opt" onclick="selectDelivery(this, 300, 'Same Day')">
+              <input type="radio" name="delivery_type" value="Same Day">
+              <span class="ck-delivery-icon">🏃</span>
+              <div class="ck-delivery-info">
+                <strong>Same Day (Dhaka only)</strong>
+                <span>Within 6 hours</span>
+              </div>
+              <span class="ck-delivery-price">৳300</span>
+            </label>
+          </div>
+        </div>
+
+      </div><!-- /left -->
+
+      <!-- ── RIGHT: Order Summary sidebar ──────────────────────────────── -->
+      <div>
+        <div class="ck-summary">
+          <h3>🧾 Order Summary</h3>
+
+          <div class="ck-sum-shoe">
+            <img class="ck-sum-shoe-img" id="ck-sum-img" src="" alt="Shoe" onerror="this.style.visibility='hidden'">
+            <div>
+              <div class="ck-sum-shoe-name" id="ck-sum-name">—</div>
+              <div class="ck-sum-shoe-sub">Custom VAYELLE Design</div>
+              {% if saved_size.eu %}
+              <div style="font-size:.7rem;color:#f97316;font-weight:700;margin-top:4px;">Size: EU {{ saved_size.eu }}</div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="ck-sum-line"><span>Base Shoe</span><span id="ck-sum-base">৳0</span></div>
+          <div class="ck-sum-line"><span>Delivery</span><span id="ck-sum-delivery">Free</span></div>
+          <div class="ck-sum-line"><span>Tax (VAT)</span><span>Included</span></div>
+          <div class="ck-sum-total"><span>Total</span><span id="ck-sum-total">৳0</span></div>
+
+          <input type="hidden" name="total_amount" id="ck-total-input" value="0">
+
+          <button type="submit" class="ck-pay-btn" id="ck-pay-btn">
+            🔒 Pay with SSLCommerz
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </button>
+
+          <div class="ck-secure-note">🔐 256-bit SSL encrypted · Sandbox Mode</div>
+
+          <div class="ck-ssl-badge">
+            <span style="font-size:1rem;">🏦</span>
+            <span>Powered by SSLCommerz Sandbox API</span>
+          </div>
+
+          <div style="margin-top:12px;padding:10px;background:var(--stone-50);border-radius:8px;border:1px solid var(--stone-200);">
+            <p style="font-size:.7rem;color:var(--stone-400);margin:0;line-height:1.6;text-align:center;">
+              ⚠ This is a <strong>sandbox/test</strong> environment. No real payment is processed. Use test card <code style="background:var(--stone-200);padding:1px 4px;border-radius:3px;">4111 1111 1111 1111</code> on the gateway.
+            </p>
+          </div>
+        </div>
+      </div><!-- /right -->
+
+    </div><!-- /layout -->
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function(){
+  'use strict';
+  let basePrice    = 0;
+  let deliveryCost = 0;
+
+  // ── Init from first shoe ───────────────────────────────────────────────
+  const firstCard = document.querySelector('.ck-shoe-card');
+  if (firstCard) {
+    basePrice = parseFloat(firstCard.dataset.price) || 0;
+    document.getElementById('ck-sum-name').textContent = firstCard.dataset.name;
+    const img = firstCard.dataset.img;
+    if (img) document.getElementById('ck-sum-img').src = img;
+    updateSummary();
+  }
+
+  // ── Shoe selection ─────────────────────────────────────────────────────
+  window.selectShoe = function(el, name, price, img) {
+    document.querySelectorAll('.ck-shoe-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    basePrice = parseFloat(price) || 0;
+    document.getElementById('ck-shoe-name').value = name;
+    document.getElementById('ck-sum-name').textContent = name;
+    if (img) document.getElementById('ck-sum-img').src = img;
+    updateSummary();
+  };
+
+  // ── Delivery selection ─────────────────────────────────────────────────
+  window.selectDelivery = function(el, cost, label) {
+    document.querySelectorAll('.ck-delivery-opt').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    deliveryCost = cost;
+    updateSummary();
+  };
+
+  // ── Summary update ─────────────────────────────────────────────────────
+  function bdt(n) { return '৳' + Number(n).toLocaleString('en-BD'); }
+
+  function updateSummary() {
+    const total = basePrice + deliveryCost;
+    document.getElementById('ck-sum-base').textContent     = bdt(basePrice);
+    document.getElementById('ck-sum-delivery').textContent = deliveryCost > 0 ? bdt(deliveryCost) : 'Free';
+    document.getElementById('ck-sum-total').textContent    = bdt(total);
+    document.getElementById('ck-total-input').value        = total;
+  }
+
+  // ── Form validation ────────────────────────────────────────────────────
+  document.getElementById('ck-form').addEventListener('submit', function(e) {
+    let ok = true;
+    ['ck-name','ck-email','ck-phone','ck-address'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el.value.trim()) { el.classList.add('error'); ok = false; }
+      else el.classList.remove('error');
+    });
+    if (!ok) {
+      e.preventDefault();
+      window.scrollTo({ top: document.getElementById('ck-name').getBoundingClientRect().top + window.scrollY - 100, behavior: 'smooth' });
+    }
+  });
+})();
+</script>
+{% endblock %}

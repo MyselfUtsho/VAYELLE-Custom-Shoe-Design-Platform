@@ -29,7 +29,7 @@
           <li><a href="{{ url_for('main.outfit_upload') }}" class="{% if request.path == '/outfit-upload' %}active{% endif %}">AI Match</a></li>
           <li><a href="{{ url_for('main.size_guide') }}" class="{% if request.path == '/size-guide' %}active{% endif %}">Size Guide</a></li>
           <li><a href="{{ url_for('main.checkout') }}" class="{% if request.path == '/checkout' %}active{% endif %}">Checkout</a></li>
-          <li><a href="/static/../pages/budget.html">Budget</a></li>
+          <li><a href="{{ url_for('main.budget') }}" class="{% if request.path == '/budget' %}active{% endif %}">Budget</a></li>
           <li><a href="/static/../pages/community.html">Community</a></li>
           {% if session.get('role') == 'manager' %}
             <li>
@@ -111,7 +111,7 @@
           <ul>
             <li><a href="{{ url_for('main.index') }}">Home</a></li>
             <li><a href="/static/../pages/explore.html">Explore Shoes</a></li>
-            <li><a href="/static/../pages/budget.html">Budget Search</a></li>
+            <li><a href="{{ url_for('main.budget') }}">Budget Search</a></li>
           </ul>
         </div>
         <div class="footer-col">

@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% block title %}Payment Gateway Demo — VAYELLE Sandbox{% endblock %}
+{% block extra_head %}
+<style>
+.pd-page { min-height:100vh; background:linear-gradient(135deg,#0f172a,#1e293b,#0f172a); display:flex; align-items:center; justify-content:center; padding:40px 20px; }
+.pd-card { background:#fff; border-radius:24px; max-width:480px; width:100%; overflow:hidden; box-shadow:0 24px 64px rgba(0,0,0,.4); }
+.pd-header { background:linear-gradient(135deg,#1a56db,#1e40af); padding:28px 32px; text-align:center; }
+.pd-header h2 { color:#fff; margin:0 0 6px; font-size:1.3rem; }
+.pd-header p  { color:#93c5fd; font-size:.8rem; margin:0; }
+.pd-ssl { display:inline-flex; align-items:center; gap:5px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2); border-radius:999px; color:#fff; font-size:.68rem; font-weight:700; padding:4px 12px; margin-top:10px; letter-spacing:.06em; text-transform:uppercase; }
+.pd-body { padding:28px 32px; }
+.pd-amount { text-align:center; margin-bottom:24px; padding:20px; background:linear-gradient(135deg,#fff7ed,#fff); border:2px solid #fed7aa; border-radius:14px; }
+.pd-amount-label { font-size:.75rem; color:#92400e; font-weight:600; text-transform:uppercase; letter-spacing:.08em; }
+.pd-amount-val   { font-size:2.4rem; font-weight:900; color:#f97316; }
+.pd-order-row { display:flex; justify-content:space-between; padding:8px 0; font-size:.82rem; border-bottom:1px solid var(--stone-100); color:var(--stone-600); }
+.pd-order-row:last-child { border-bottom:none; }
+.pd-order-row strong { color:var(--stone-900); }
+.pd-methods { display:flex; flex-direction:column; gap:8px; margin:20px 0; }
+.pd-method {
+  display:flex; align-items:center; gap:12px; padding:12px 14px;
+  border:1.5px solid var(--stone-200); border-radius:12px; cursor:pointer; transition:all .2s;
+}
+.pd-method.active { border-color:#1a56db; background:#eff6ff; }
+.pd-method input[type=radio] { accent-color:#1a56db; }
+.pd-method-icon { font-size:1.3rem; }
+.pd-method-name { font-size:.85rem; font-weight:600; color:var(--stone-800); }
+.pd-method-sub  { font-size:.72rem; color:var(--stone-500); }
+.pd-test-card { background:var(--stone-50); border:1px solid var(--stone-200); border-radius:10px; padding:12px 14px; margin-bottom:16px; }
+.pd-test-card h4 { font-size:.78rem; font-weight:700; color:var(--stone-600); text-transform:uppercase; letter-spacing:.06em; margin:0 0 8px; }
+.pd-card-fields { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.pd-cf { }
+.pd-cf label { font-size:.7rem; font-weight:700; color:var(--stone-500); display:block; margin-bottom:3px; letter-spacing:.04em; text-transform:uppercase; }
+.pd-cf input { width:100%; padding:8px 10px; border:1px solid var(--stone-200); border-radius:8px; font-size:.85rem; box-sizing:border-box; background:#fff; }
+.pd-pay-btn { width:100%; padding:14px; border-radius:12px; background:linear-gradient(135deg,#1a56db,#1e40af); color:#fff; font-weight:800; font-size:.95rem; border:none; cursor:pointer; box-shadow:0 4px 16px rgba(26,86,219,.4); transition:all .2s; display:flex; align-items:center; justify-content:center; gap:8px; }
+.pd-pay-btn:hover { transform:translateY(-2px); box-shadow:0 7px 22px rgba(26,86,219,.5); }
+.pd-cancel { display:block; text-align:center; margin-top:12px; font-size:.8rem; color:var(--stone-400); text-decoration:none; }
+.pd-cancel:hover { color:var(--stone-600); }
+.pd-sandbox-note { margin-top:16px; padding:10px; background:var(--stone-50); border-radius:8px; font-size:.7rem; color:var(--stone-400); text-align:center; line-height:1.6; }
+.pd-processing { display:none; text-align:center; padding:20px 0; }
+.pd-spin { width:40px; height:40px; border:4px solid #e2e8f0; border-top-color:#1a56db; border-radius:50%; animation:spin .8s linear infinite; margin:0 auto 12px; }
+@keyframes spin { to { transform:rotate(360deg); } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pd-page">
+  <div class="pd-card">
+    <!-- Header -->
+    <div class="pd-header">
+      <div class="pd-ssl">🔒 SSLCommerz Sandbox</div>
+      <h2>Secure Payment Gateway</h2>
+      <p>VAYELLE Custom Shoe Platform · Test Mode</p>
+    </div>
+
+    <!-- Body -->
+    <div class="pd-body">
+      <!-- Amount -->
+      <div class="pd-amount">
+        <div class="pd-amount-label">Total Amount Due</div>
+        <div class="pd-amount-val">৳{{ '{:,.0f}'.format(order.amount) }}</div>
+      </div>
+
+      <!-- Order details -->
+      <div style="margin-bottom:20px;">
+        <div class="pd-order-row"><span>Order ID</span><strong>{{ order.tran_id }}</strong></div>
+        <div class="pd-order-row"><span>Product</span><strong>{{ order.shoe_name }}</strong></div>
+        <div class="pd-order-row"><span>Shoe Size</span><strong>EU {{ order.size_eu }}</strong></div>
+        <div class="pd-order-row"><span>Customer</span><strong>{{ order.name }}</strong></div>
+        <div class="pd-order-row"><span>Delivery</span><strong>{{ order.delivery }}</strong></div>
+      </div>
+
+      <!-- Payment Methods -->
+      <div class="pd-methods" id="pd-methods">
+        <label class="pd-method active" onclick="this.parentElement.querySelectorAll('.pd-method').forEach(m=>m.classList.remove('active'));this.classList.add('active');">
+          <input type="radio" name="pm" checked>
+          <span class="pd-method-icon">💳</span>
+          <div><div class="pd-method-name">Credit / Debit Card</div><div class="pd-method-sub">Visa, Mastercard, Amex</div></div>
+        </label>
+        <label class="pd-method" onclick="this.parentElement.querySelectorAll('.pd-method').forEach(m=>m.classList.remove('active'));this.classList.add('active');">
+          <input type="radio" name="pm">
+          <span class="pd-method-icon">📱</span>
+          <div><div class="pd-method-name">Mobile Banking</div><div class="pd-method-sub">bKash, Nagad, Rocket</div></div>
+        </label>
+        <label class="pd-method" onclick="this.parentElement.querySelectorAll('.pd-method').forEach(m=>m.classList.remove('active'));this.classList.add('active');">
+          <input type="radio" name="pm">
+          <span class="pd-method-icon">🏦</span>
+          <div><div class="pd-method-name">Internet Banking</div><div class="pd-method-sub">BRAC, Dutch-Bangla, City Bank</div></div>
+        </label>
+      </div>
+
+      <!-- Test Card Info -->
+      <div class="pd-test-card">
+        <h4>🧪 Sandbox Test Card (Pre-filled)</h4>
+        <div class="pd-card-fields">
+          <div class="pd-cf" style="grid-column:1/-1;">
+            <label>Card Number</label>
+            <input type="text" value="4111 1111 1111 1111" readonly style="font-family:monospace;letter-spacing:.1em;">
+          </div>
+          <div class="pd-cf">
+            <label>Expiry</label>
+            <input type="text" value="12/28" readonly>
+          </div>
+          <div class="pd-cf">
+            <label>CVV</label>
+            <input type="text" value="123" readonly>
+          </div>
+          <div class="pd-cf" style="grid-column:1/-1;">
+            <label>Cardholder Name</label>
+            <input type="text" value="{{ order.name }}" readonly>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pay & Cancel buttons — POST to /payment/demo/process (safe, session-validated) -->
+      <div id="pd-actions">
+        <form method="POST" action="{{ url_for('main.payment_demo_process') }}" id="pd-pay-form" onsubmit="showProcessing()">
+          <input type="hidden" name="payment_method" id="chosen-method" value="card">
+          <button type="submit" class="pd-pay-btn">
+            🔒 Pay ৳{{ '{:,.0f}'.format(order.amount) }} Now
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </button>
+        </form>
+        <a href="{{ url_for('main.payment_cancel') }}" class="pd-cancel">Cancel and return to checkout</a>
+        <a href="{{ url_for('main.payment_fail') }}" class="pd-cancel" style="color:#ef4444;">Simulate payment failure</a>
+      </div>
+
+      <div class="pd-processing" id="pd-processing">
+        <div class="pd-spin"></div>
+        <div style="font-size:.9rem;font-weight:600;color:var(--stone-700);">Processing payment...</div>
+        <div style="font-size:.75rem;color:var(--stone-400);margin-top:4px;">Please do not close this window</div>
+      </div>
+
+      <div class="pd-sandbox-note">⚠ SANDBOX MODE — No real money is charged. This is a simulated payment environment for the CSE471 course project.</div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showProcessing() {
+  document.getElementById('pd-actions').style.display = 'none';
+  document.getElementById('pd-processing').style.display = 'block';
+}
+</script>
+{% endblock %}

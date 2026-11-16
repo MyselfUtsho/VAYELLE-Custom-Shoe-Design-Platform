@@ -1,13 +1,13 @@
 import os
 import uuid
-from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify, flash
 from app.auth_utils import get_current_user
-from app.db import get_shoes_collection, check_db_connection
+import app.db as app_db
 
 main_bp = Blueprint('main', __name__)
 
-# ── Outfit Upload Config ──────────────────────────────────────────────────────
-_UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), '..', 'static', 'uploads', 'outfits')
+# ── Outfit Upload Config (Khairul Islam Bhuiya — Module 1) ───────────────────
+_UPLOAD_FOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'static', 'uploads', 'outfits'))
 _MAX_SIZE      = 5 * 1024 * 1024   # 5 MB
 _ALLOWED_EXT   = {'jpg', 'jpeg', 'png'}
 
@@ -25,15 +25,17 @@ def _magic_type(header: bytes):
 def _fmt_size(n):
     return f'{n/1024:.1f} KB' if n < 1_048_576 else f'{n/1_048_576:.2f} MB'
 
+
+# ── Athoy Roy — Module 1: Home & Catalog Browsing ───────────────────────────
 @main_bp.route('/')
 def index():
     """Homepage route: displays hero section and featured collection."""
     user = get_current_user()
-    db_ok, _ = check_db_connection()
+    db_ok, _ = app_db.check_db_connection()
     shoes_list = []
     
     if db_ok:
-        shoes_col = get_shoes_collection()
+        shoes_col = app_db.get_shoes_collection()
         if shoes_col is not None:
             try:
                 shoes_list = list(shoes_col.find().sort('created_at', -1).limit(6))
@@ -56,7 +58,6 @@ def explore():
     selected_category = (request.args.get('category') or request.args.get('type') or 'All').strip()
     
     # Step 2: Build MongoDB query filter
-    # An empty query dictionary {} retrieves all shoes
     query = {}
     
     # Filter by gender if a specific gender is selected (Men, Women, Unisex)
@@ -69,13 +70,12 @@ def explore():
         
     # Step 3: Connect to MongoDB and fetch matching shoe records
     shoes_list = []
-    db_ok, db_msg = check_db_connection()
+    db_ok, db_msg = app_db.check_db_connection()
     
     if db_ok:
-        shoes_col = get_shoes_collection()
+        shoes_col = app_db.get_shoes_collection()
         if shoes_col is not None:
             try:
-                # Query MongoDB with our filter, sorting newest items first
                 shoes_list = list(shoes_col.find(query).sort('created_at', -1))
             except Exception as e:
                 print(f"Database query error: {e}")
@@ -99,7 +99,6 @@ def category():
     """
     cat = request.args.get('cat', '').strip().lower()
     
-    # Map category parameter to gender or category filter
     if cat == 'men':
         return redirect(url_for('main.explore', gender='Men'))
     elif cat == 'women':
@@ -114,6 +113,91 @@ def category():
         return redirect(url_for('main.explore', category='Formal'))
         
     return redirect(url_for('main.explore'))
+
+
+# ── Diya Zerin — Module 1: Budget-Based Shoe Search ──────────────────────────
+@main_bp.route('/budget')
+def budget():
+    """
+    Module 1: Budget-Based Shoe Search (Diya Zerin — 22101062)
+    Users can search for shoes within a minimum and maximum budget.
+    The system retrieves matching shoe records from MongoDB based on their base prices.
+    """
+    user = get_current_user()
+
+    # Step 1: Read budget filter parameters from URL query string
+    min_price_raw = request.args.get('min_price', '').strip()
+    max_price_raw = request.args.get('max_price', '').strip()
+
+    # Step 2: Parse and validate min/max price inputs
+    min_price = None
+    max_price = None
+    error_message = None
+
+    if min_price_raw:
+        try:
+            min_price = float(min_price_raw)
+            if min_price < 0:
+                error_message = "Minimum price cannot be negative."
+                min_price = None
+        except ValueError:
+            error_message = "Minimum price must be a valid number."
+
+    if max_price_raw:
+        try:
+            max_price = float(max_price_raw)
+            if max_price < 0:
+                error_message = "Maximum price cannot be negative."
+                max_price = None
+        except ValueError:
+            error_message = "Maximum price must be a valid number."
+
+    # Cross-validate: min should not exceed max
+    if min_price is not None and max_price is not None and min_price > max_price:
+        error_message = "Minimum price cannot be greater than maximum price."
+
+    # Step 3: Build MongoDB query filter based on budget range
+    query = {}
+    has_search = False
+
+    if error_message is None:
+        if min_price is not None or max_price is not None:
+            has_search = True
+            price_filter = {}
+            if min_price is not None:
+                price_filter['$gte'] = min_price
+            if max_price is not None:
+                price_filter['$lte'] = max_price
+            if price_filter:
+                query['base_price'] = price_filter
+
+    # Step 4: Connect to MongoDB and fetch matching shoe records
+    shoes_list = []
+    db_ok, db_msg = app_db.check_db_connection()
+
+    if db_ok and error_message is None:
+        shoes_col = app_db.get_shoes_collection()
+        if shoes_col is not None:
+            try:
+                # Query MongoDB with budget filter, sorting by price (low to high)
+                shoes_list = list(shoes_col.find(query).sort('base_price', 1))
+            except Exception as e:
+                print(f"Budget search query error: {e}")
+                shoes_list = []
+
+    # Step 5: Render the budget search template with results
+    return render_template(
+        'budget.html',
+        user=user,
+        shoes=shoes_list,
+        min_price=min_price,
+        max_price=max_price,
+        min_price_raw=min_price_raw,
+        max_price_raw=max_price_raw,
+        has_search=has_search,
+        error_message=error_message,
+        total_count=len(shoes_list)
+    )
 
 
 # ── Khairul Islam Bhuiya — Module 1: Outfit Image Upload ─────────────────────
@@ -306,7 +390,7 @@ def checkout():
     delivery options, and SSLCommerz Sandbox payment initiation.
     """
     user     = get_current_user()
-    shoes_col = get_shoes_collection()
+    shoes_col = app_db.get_shoes_collection()
     shoes_list = list(shoes_col.find().sort('created_at', -1)) if shoes_col is not None else []
 
     # Saved size from session
@@ -347,7 +431,6 @@ def payment_initiate():
 
     # Basic validation
     if not all([name, email, phone, address]):
-        from flask import flash
         flash('Please fill in all required shipping fields.', 'error')
         return redirect(url_for('main.checkout'))
 
@@ -356,7 +439,6 @@ def payment_initiate():
         if amount <= 0:
             raise ValueError
     except (TypeError, ValueError):
-        from flask import flash
         flash('Invalid order total. Please go back and try again.', 'error')
         return redirect(url_for('main.checkout'))
 
@@ -446,8 +528,6 @@ def payment_demo_process():
 
     order = session.get('pending_order')
     if not order or not order.get('demo_mode'):
-        # No valid pending demo session — refuse and redirect
-        from flask import flash
         flash('No active payment session found. Please restart checkout.', 'error')
         return redirect(url_for('main.checkout'))
 
@@ -460,7 +540,6 @@ def payment_demo_process():
     session['pending_order']['demo_processed'] = True
 
     # Redirect to the standard success handler with demo params
-    from flask import flash as _flash
     return redirect(
         url_for('main.payment_success')
         + f'?tran_id={tran_id}&val_id={val_id}&amount={amount}'
@@ -515,4 +594,3 @@ def payment_cancel():
     session.pop('pending_order', None)
     return render_template('payment_fail.html',
         order={}, reason='You cancelled the payment. Your order was not placed.')
-
