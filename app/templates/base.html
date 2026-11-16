@@ -27,12 +27,12 @@
           <li><a href="{{ url_for('colors.choose_design') }}" class="{% if '/choose-design' in request.path %}active{% endif %}" style="font-weight:700; color:var(--accent);">Choose Your Design</a></li>
           <li><a href="{{ url_for('colors.color_studio') }}" class="{% if '/colors' in request.path %}active{% endif %}">Color Studio</a></li>
           <li><a href="{{ url_for('main.explore') }}" class="{% if request.path == '/explore' %}active{% endif %}">Explore</a></li>
-          <li><a href="/static/../pages/studio.html">Design Studio</a></li>
+          <li><a href="/pages/studio.html" class="{% if '/pages/studio' in request.path %}active{% endif %}">Design Studio</a></li>
           <li><a href="{{ url_for('main.outfit_upload') }}" class="{% if request.path == '/outfit-upload' %}active{% endif %}">AI Match</a></li>
           <li><a href="{{ url_for('main.size_guide') }}" class="{% if request.path == '/size-guide' %}active{% endif %}">Size Guide</a></li>
           <li><a href="{{ url_for('main.checkout') }}" class="{% if request.path == '/checkout' %}active{% endif %}">Checkout</a></li>
           <li><a href="{{ url_for('main.budget') }}" class="{% if request.path == '/budget' %}active{% endif %}">Budget</a></li>
-          <li><a href="/static/../pages/community.html">Community</a></li>
+          <li><a href="/pages/community.html" class="{% if '/pages/community' in request.path %}active{% endif %}">Community</a></li>
           {% if session.get('role') == 'manager' %}
             <li>
               <a href="{{ url_for('manager.dashboard') }}" class="{% if '/manager' in request.path %}active{% endif %}" style="color:var(--accent);font-weight:700;">
@@ -112,16 +112,16 @@
           <h4>Platform</h4>
           <ul>
             <li><a href="{{ url_for('main.index') }}">Home</a></li>
-            <li><a href="/static/../pages/explore.html">Explore Shoes</a></li>
+            <li><a href="{{ url_for('main.explore') }}">Explore Shoes</a></li>
             <li><a href="{{ url_for('main.budget') }}">Budget Search</a></li>
           </ul>
         </div>
         <div class="footer-col">
           <h4>Custom Studio</h4>
           <ul>
-            <li><a href="/static/../pages/studio.html">Design Studio</a></li>
-            <li><a href="/static/../pages/colors.html">Color Explorer</a></li>
-            <li><a href="/static/../pages/community.html">Community Designs</a></li>
+            <li><a href="/pages/studio.html">Design Studio</a></li>
+            <li><a href="{{ url_for('colors.color_studio') }}">Color Explorer</a></li>
+            <li><a href="/pages/community.html">Community Designs</a></li>
           </ul>
         </div>
         <div class="footer-col">

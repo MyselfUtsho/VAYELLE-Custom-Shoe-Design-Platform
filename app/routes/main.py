@@ -594,3 +594,48 @@ def payment_cancel():
     session.pop('pending_order', None)
     return render_template('payment_fail.html',
         order={}, reason='You cancelled the payment. Your order was not placed.')
+
+
+# ── Static Frontend Compatibility Routes ──────────────────────────────────────
+_FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'frontend'))
+
+@main_bp.route('/pages/<path:filename>')
+def serve_frontend_page(filename):
+    """Serve legacy/prototype static frontend pages without 404."""
+    redirect_map = {
+        'explore.html': 'main.explore',
+        'outfit-upload.html': 'main.outfit_upload',
+        'size-guide.html': 'main.size_guide',
+        'budget.html': 'main.budget',
+        'colors.html': 'colors.color_studio',
+        'checkout.html': 'main.checkout',
+        'login.html': 'auth.login',
+        'register.html': 'auth.register',
+    }
+    if filename in redirect_map:
+        return redirect(url_for(redirect_map[filename]))
+
+    pages_dir = os.path.join(_FRONTEND_DIR, 'pages')
+    from flask import send_from_directory
+    if os.path.exists(os.path.join(pages_dir, filename)):
+        return send_from_directory(pages_dir, filename)
+    return redirect(url_for('colors.choose_design'))
+
+
+@main_bp.route('/css/<path:filename>')
+def serve_frontend_css(filename):
+    from flask import send_from_directory
+    return send_from_directory(os.path.join(_FRONTEND_DIR, 'css'), filename)
+
+
+@main_bp.route('/js/<path:filename>')
+def serve_frontend_js(filename):
+    from flask import send_from_directory
+    return send_from_directory(os.path.join(_FRONTEND_DIR, 'js'), filename)
+
+
+@main_bp.route('/assets/<path:filename>')
+def serve_frontend_assets(filename):
+    from flask import send_from_directory
+    return send_from_directory(os.path.join(_FRONTEND_DIR, 'assets'), filename)
+
