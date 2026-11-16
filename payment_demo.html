@@ -111,15 +111,17 @@
         </div>
       </div>
 
-      <!-- Pay & Cancel buttons -->
+      <!-- Pay & Cancel buttons — POST to /payment/demo/process (safe, session-validated) -->
       <div id="pd-actions">
-        <a href="{{ url_for('main.payment_success') }}?tran_id={{ order.tran_id }}&val_id=DEMO-{{ range(100000,999999)|random }}&amount={{ order.amount }}&card_type=Demo+Card&store_amount={{ order.amount }}"
-           class="pd-pay-btn" onclick="showProcessing()">
-          🔒 Pay ৳{{ '{:,.0f}'.format(order.amount) }} Now
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-          </svg>
-        </a>
+        <form method="POST" action="{{ url_for('main.payment_demo_process') }}" id="pd-pay-form" onsubmit="showProcessing()">
+          <input type="hidden" name="payment_method" id="chosen-method" value="card">
+          <button type="submit" class="pd-pay-btn">
+            🔒 Pay ৳{{ '{:,.0f}'.format(order.amount) }} Now
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </button>
+        </form>
         <a href="{{ url_for('main.payment_cancel') }}" class="pd-cancel">Cancel and return to checkout</a>
         <a href="{{ url_for('main.payment_fail') }}" class="pd-cancel" style="color:#ef4444;">Simulate payment failure</a>
       </div>
