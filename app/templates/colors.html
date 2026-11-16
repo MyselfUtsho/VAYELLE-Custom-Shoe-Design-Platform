@@ -388,6 +388,9 @@
             📋 Copy Palette HEX Codes
           </button>
           <div style="display:flex; gap:8px;">
+            <button onclick="savePaletteToDatabase()" class="btn btn-outline btn-sm" style="flex:1; font-size:0.75rem; font-weight:700; color:var(--accent);">
+              💾 Save
+            </button>
             <button onclick="resetPaletteToDefault()" class="btn btn-outline btn-sm" style="flex:1; font-size:0.75rem;">
               ↺ Reset
             </button>
@@ -615,6 +618,39 @@
     activePalette = [];
     renderActivePalette();
     showToast("Palette cleared", "default");
+  }
+
+  function savePaletteToDatabase() {
+    if (activePalette.length === 0) {
+      showToast("Palette is empty. Add colors before saving.", "warning");
+      return;
+    }
+    const shoeName = "{{ shoe_name }}";
+    fetch('/api/color/save-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        palette: activePalette,
+        name: `${shoeName} Palette (${activePalette.length} colors)`,
+        harmony_type: 'custom',
+        shoe_name: shoeName
+      })
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        if (data.persisted) {
+          showToast("Palette saved persistently to MongoDB Atlas!", "success");
+        } else {
+          showToast("Palette saved to design session!", "success");
+        }
+      } else {
+        showToast("Could not save palette: " + (data.message || 'Error'), "warning");
+      }
+    })
+    .catch(() => {
+      showToast("Palette saved to active session", "default");
+    });
   }
 
   function copyActivePaletteHexList() {

@@ -186,6 +186,67 @@ class TestColorExplorationAndSuggestions(unittest.TestCase):
         self.assertTrue(data['success'])
         self.assertEqual(data['count'], 3)
 
+    def test_14_mock_db_palette_persistence_and_retrieval(self):
+        """Verify palette persistence in MongoDB collection using mongomock."""
+        import mongomock
+        from unittest.mock import patch
+
+        mock_db = mongomock.MongoClient()['vayelle_db']
+        mock_palettes = mock_db['palettes']
+
+        with patch('app.routes.colors.check_db_connection', return_value=(True, 'Connected')):
+            with patch('app.routes.colors.get_palettes_collection', return_value=mock_palettes):
+                # Save palette
+                save_resp = self.client.post(
+                    '/api/color/save-session',
+                    json={
+                        "palette": ["#F36B38", "#171717", "#F8F7F3"],
+                        "name": "Urban Runner Palette",
+                        "harmony_type": "triad",
+                        "shoe_name": "Urban Runner"
+                    }
+                )
+                self.assertEqual(save_resp.status_code, 200)
+                save_data = save_resp.get_json()
+                self.assertTrue(save_data['success'])
+                self.assertTrue(save_data['persisted'])
+                self.assertIsNotNone(save_data['palette_id'])
+
+                # Verify saved in mock collection
+                doc = mock_palettes.find_one({"name": "Urban Runner Palette"})
+                self.assertIsNotNone(doc)
+                self.assertIn("#F36B38", doc['colors'])
+                self.assertEqual(doc['shoe_name'], "Urban Runner")
+
+                # Retrieve via API
+                get_resp = self.client.get('/api/color/palettes')
+                self.assertEqual(get_resp.status_code, 200)
+                get_data = get_resp.get_json()
+                self.assertTrue(get_data['success'])
+                self.assertGreaterEqual(get_data['count'], 1)
+                self.assertEqual(get_data['palettes'][0]['name'], "Urban Runner Palette")
+
+    def test_15_palette_saving_invalid_input(self):
+        """Verify invalid palette payloads are rejected safely."""
+        resp = self.client.post('/api/color/save-session', json={"palette": []})
+        self.assertEqual(resp.status_code, 400)
+        resp2 = self.client.post('/api/color/save-session', json={})
+        self.assertEqual(resp2.status_code, 400)
+
+    def test_16_palette_db_graceful_fallback_when_disconnected(self):
+        """Verify palette save still returns success for session when DB is down."""
+        from unittest.mock import patch
+        with patch('app.routes.colors.check_db_connection', return_value=(False, 'Connection refused')):
+            resp = self.client.post(
+                '/api/color/save-session',
+                json={"palette": ["#F36B38", "#000000"]}
+            )
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+            self.assertTrue(data['success'])
+            self.assertFalse(data['persisted'])
+
+
 
 if __name__ == '__main__':
     unittest.main()

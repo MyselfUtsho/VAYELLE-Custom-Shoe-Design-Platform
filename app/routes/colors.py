@@ -9,8 +9,10 @@ Routes:
 - /api/color/*   : JSON endpoints for Color API info, schemes, and WCAG contrast calculations
 """
 
+from datetime import datetime, timezone
 from flask import Blueprint, render_template, request, jsonify, session
 from app.auth_utils import get_current_user
+from app.db import get_palettes_collection, check_db_connection
 from app.color_service import (
     get_color_info,
     get_color_scheme,
@@ -125,11 +127,86 @@ def api_color_contrast():
 
 @colors_bp.route('/api/color/save-session', methods=['POST'])
 def api_save_session_palette():
-    """Saves the user's active palette in Flask session."""
+    """Saves the user's active palette in Flask session and MongoDB if available."""
     data = request.get_json(silent=True) or {}
     palette = data.get('palette', [])
+    palette_name = data.get('name', 'Custom Shoe Palette').strip()[:50]
+    harmony_type = data.get('harmony_type', 'custom').strip()[:30]
+    shoe_name = data.get('shoe_name', '').strip()[:50]
+
     if isinstance(palette, list) and len(palette) > 0:
         cleaned_palette = [get_color_info(h) for h in palette[:10]]
         session['active_palette'] = cleaned_palette
-        return jsonify({"success": True, "count": len(cleaned_palette)})
+
+        # Attempt persistent storage in MongoDB Atlas
+        persisted = False
+        db_id = None
+        db_ok, _ = check_db_connection()
+        if db_ok:
+            palettes_col = get_palettes_collection()
+            if palettes_col is not None:
+                try:
+                    user = get_current_user()
+                    user_email = user.get('email') if user else 'anonymous'
+                    doc = {
+                        'name': palette_name,
+                        'colors': [c.get('hex') for c in cleaned_palette if c.get('hex')],
+                        'colors_detail': cleaned_palette,
+                        'harmony_type': harmony_type,
+                        'shoe_name': shoe_name,
+                        'created_by': user_email,
+                        'created_at': datetime.now(timezone.utc)
+                    }
+                    res = palettes_col.insert_one(doc)
+                    persisted = True
+                    db_id = str(res.inserted_id)
+                except Exception as e:
+                    persisted = False
+
+        return jsonify({
+            "success": True,
+            "count": len(cleaned_palette),
+            "persisted": persisted,
+            "palette_id": db_id
+        })
     return jsonify({"success": False, "message": "Invalid palette data"}), 400
+
+
+@colors_bp.route('/api/color/palettes', methods=['GET'])
+def api_get_saved_palettes():
+    """Retrieves saved palettes from MongoDB Atlas (with fallback to session)."""
+    db_ok, _ = check_db_connection()
+    palettes = []
+    if db_ok:
+        palettes_col = get_palettes_collection()
+        if palettes_col is not None:
+            try:
+                user = get_current_user()
+                query = {}
+                if user and user.get('email'):
+                    query = {'$or': [{'created_by': user['email']}, {'created_by': 'anonymous'}]}
+                cursor = palettes_col.find(query).sort('created_at', -1).limit(20)
+                for doc in cursor:
+                    doc['_id'] = str(doc['_id'])
+                    if 'created_at' in doc and hasattr(doc['created_at'], 'isoformat'):
+                        doc['created_at'] = doc['created_at'].isoformat()
+                    palettes.append(doc)
+            except Exception:
+                palettes = []
+
+    # If DB has no palettes or is disconnected, offer active session palette if present
+    if not palettes and 'active_palette' in session:
+        session_colors = session.get('active_palette', [])
+        palettes.append({
+            '_id': 'session_active',
+            'name': 'Current Session Palette',
+            'colors': [c.get('hex') for c in session_colors if c.get('hex')],
+            'colors_detail': session_colors,
+            'harmony_type': 'session',
+            'shoe_name': 'Session',
+            'created_by': 'current_user',
+            'created_at': datetime.now(timezone.utc).isoformat()
+        })
+
+    return jsonify({"success": True, "palettes": palettes, "count": len(palettes)})
+
