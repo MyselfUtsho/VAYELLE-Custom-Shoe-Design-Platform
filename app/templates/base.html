@@ -27,7 +27,7 @@
           <li><a href="{{ url_for('main.explore') }}" class="{% if request.path == '/explore' %}active{% endif %}">Explore</a></li>
           <li><a href="/static/../pages/studio.html">Design Studio</a></li>
           <li><a href="/static/../pages/outfit-upload.html">AI Match</a></li>
-          <li><a href="/static/../pages/budget.html">Budget</a></li>
+          <li><a href="{{ url_for('main.budget') }}" class="{% if request.path == '/budget' %}active{% endif %}">Budget</a></li>
           <li><a href="/static/../pages/community.html">Community</a></li>
           {% if session.get('role') == 'manager' %}
             <li>
@@ -109,7 +109,7 @@
           <ul>
             <li><a href="{{ url_for('main.index') }}">Home</a></li>
             <li><a href="/static/../pages/explore.html">Explore Shoes</a></li>
-            <li><a href="/static/../pages/budget.html">Budget Search</a></li>
+            <li><a href="{{ url_for('main.budget') }}">Budget Search</a></li>
           </ul>
         </div>
         <div class="footer-col">
