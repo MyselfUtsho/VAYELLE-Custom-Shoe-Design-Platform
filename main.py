@@ -433,6 +433,41 @@ def payment_demo():
     return render_template('payment_demo.html', order=order)
 
 
+@main_bp.route('/payment/demo/process', methods=['POST'])
+def payment_demo_process():
+    """
+    Module 2 — Khairul Islam Bhuiya
+    Processes the sandbox demo payment form.
+    Validates the demo session exists, then redirects to the success handler.
+    This is the ONLY way to reach /payment/success in demo mode — a direct
+    GET to /payment/success without a session order is harmless (order={}).
+    """
+    import uuid as _uuid2
+
+    order = session.get('pending_order')
+    if not order or not order.get('demo_mode'):
+        # No valid pending demo session — refuse and redirect
+        from flask import flash
+        flash('No active payment session found. Please restart checkout.', 'error')
+        return redirect(url_for('main.checkout'))
+
+    # Generate demo transaction identifiers
+    tran_id  = order.get('tran_id', 'VAYELLE-' + _uuid2.uuid4().hex[:12].upper())
+    val_id   = 'DEMO-' + _uuid2.uuid4().hex[:8].upper()
+    amount   = str(order.get('amount', 0))
+
+    # Mark the session order as processed so it cannot be reused
+    session['pending_order']['demo_processed'] = True
+
+    # Redirect to the standard success handler with demo params
+    from flask import flash as _flash
+    return redirect(
+        url_for('main.payment_success')
+        + f'?tran_id={tran_id}&val_id={val_id}&amount={amount}'
+        + '&card_type=Demo+Card&store_amount=' + amount
+    )
+
+
 @main_bp.route('/payment/success', methods=['GET', 'POST'])
 def payment_success():
     """SSLCommerz callback — payment successful."""
