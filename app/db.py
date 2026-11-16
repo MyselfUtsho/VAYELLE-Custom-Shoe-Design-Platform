@@ -65,3 +65,15 @@ def get_users_collection():
 def get_shoes_collection():
     db = get_db()
     return db.shoes if db is not None else None
+
+def get_palettes_collection():
+    """Returns the palettes collection for storing user-created and saved palettes."""
+    db = get_db()
+    if db is not None:
+        try:
+            db.palettes.create_index("created_at")
+        except Exception as e:
+            logger.warning(f"Could not initialize palettes index: {e}")
+        return db.palettes
+    return None
+

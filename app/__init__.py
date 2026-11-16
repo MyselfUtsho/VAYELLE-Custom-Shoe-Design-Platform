@@ -14,10 +14,12 @@ def create_app(config_class=Config):
     from app.routes.main import main_bp
     from app.routes.auth import auth_bp
     from app.routes.manager import manager_bp
+    from app.routes.colors import colors_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(manager_bp)
+    app.register_blueprint(colors_bp)
 
     # Template context helpers
     @app.context_processor

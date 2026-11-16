@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Choose Your Design — VAYELLE{% endblock %}
+
+{% block content %}
+<div class="section-container" style="padding-top: 48px; padding-bottom: 80px;">
+
+  <!-- Breadcrumbs -->
+  <nav class="breadcrumb-nav" style="display:flex; align-items:center; gap:8px; font-size:0.875rem; color:var(--text-muted); margin-bottom:24px;">
+    <a href="{{ url_for('main.index') }}" style="color:var(--text-muted); text-decoration:none;">Home</a>
+    <span>/</span>
+    <span style="color:var(--text-heading); font-weight:600;">Choose Your Design</span>
+  </nav>
+
+  <!-- Section Header -->
+  <div class="text-center" style="max-width: 720px; margin: 0 auto 48px;">
+    <p class="eyebrow" style="color:var(--accent); font-weight:700; text-transform:uppercase; letter-spacing:0.08em; font-size:0.8125rem; margin-bottom:8px;">
+      Design Experience
+    </p>
+    <h1 style="font-size:2.5rem; font-weight:800; color:var(--text-heading); margin-bottom:12px;">
+      Choose Your Design Pathway
+    </h1>
+    <p style="color:var(--text-muted); font-size:1.1rem; line-height:1.6;">
+      Start your personalized footwear journey. Explore our curated silhouettes or jump straight into the Color Studio to build custom palettes.
+    </p>
+  </div>
+
+  <!-- Two Options Grid -->
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 32px; max-width: 960px; margin: 0 auto;">
+    
+    <!-- OPTION A: Explore Designs -->
+    <div class="studio-panel" style="padding: 36px 32px; border-radius: var(--radius-2xl); border: 2px solid var(--border-color); background: var(--bg-card); display:flex; flex-direction:column; justify-content:space-between; transition: all 0.3s ease; box-shadow: var(--shadow-md);">
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+          <span style="font-size: 2.5rem;">👟</span>
+          <span class="badge badge-default" style="font-size:0.75rem; padding: 6px 12px; font-weight:700;">
+            Option A
+          </span>
+        </div>
+        <h2 style="font-size: 1.6rem; font-weight: 800; color:var(--text-heading); margin-bottom: 12px;">
+          Explore Designs
+        </h2>
+        <p style="color:var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px;">
+          Browse existing handcrafted shoe silhouettes across Sneakers, Casual, and Formal categories. Filter by gender and discover the perfect foundation for your design.
+        </p>
+        <ul style="list-style:none; padding:0; margin:0 0 28px 0; display:flex; flex-direction:column; gap:10px; font-size:0.875rem; color:var(--text-heading);">
+          <li style="display:flex; align-items:center; gap:8px;">
+            <span style="color:var(--accent); font-weight:bold;">✓</span> Filter by Gender & Category
+          </li>
+          <li style="display:flex; align-items:center; gap:8px;">
+            <span style="color:var(--accent); font-weight:bold;">✓</span> Cloudinary Optimized Media
+          </li>
+          <li style="display:flex; align-items:center; gap:8px;">
+            <span style="color:var(--accent); font-weight:bold;">✓</span> Real-time MongoDB Inventory
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <a href="{{ url_for('main.explore') }}" class="btn btn-outline" style="width:100%; text-align:center; padding: 14px; font-size: 1rem; font-weight:700;">
+          Explore Existing Designs →
+        </a>
+      </div>
+    </div>
+
+    <!-- OPTION B: Create Your Color (Assigned Feature) -->
+    <div class="studio-panel" style="padding: 36px 32px; border-radius: var(--radius-2xl); border: 2px solid var(--accent); background: linear-gradient(180deg, var(--bg-card) 0%, rgba(243, 107, 56, 0.05) 100%); display:flex; flex-direction:column; justify-content:space-between; transition: all 0.3s ease; box-shadow: var(--shadow-lg); position:relative;">
+      <div style="position:absolute; top:-12px; right:24px; background:var(--accent); color:white; font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; padding:4px 12px; border-radius:var(--radius-full);">
+        Featured Feature
+      </div>
+
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+          <span style="font-size: 2.5rem;">🎨</span>
+          <span class="badge badge-accent" style="font-size:0.75rem; padding: 6px 12px; font-weight:700;">
+            Option B
+          </span>
+        </div>
+        <h2 style="font-size: 1.6rem; font-weight: 800; color:var(--text-heading); margin-bottom: 12px;">
+          Create Your Color
+        </h2>
+        <p style="color:var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px;">
+          Explore colours, create beautiful palettes, and find the perfect combination for your shoes.
+        </p>
+        <ul style="list-style:none; padding:0; margin:0 0 28px 0; display:flex; flex-direction:column; gap:10px; font-size:0.875rem; color:var(--text-heading);">
+          <li style="display:flex; align-items:center; gap:8px;">
+            <span style="color:var(--accent); font-weight:bold;">✓</span> Interactive Color Picker & Manual HEX Input
+          </li>
+          <li style="display:flex; align-items:center; gap:8px;">
+            <span style="color:var(--accent); font-weight:bold;">✓</span> Color API Schemes (Complementary, Triadic, etc.)
+          </li>
+          <li style="display:flex; align-items:center; gap:8px;">
+            <span style="color:var(--accent); font-weight:bold;">✓</span> Footwear-Specific Combinations & WCAG Contrast
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <a href="{{ url_for('colors.color_studio') }}" class="btn btn-accent" style="width:100%; text-align:center; padding: 14px; font-size: 1rem; font-weight:700;">
+          Launch Color Studio →
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
