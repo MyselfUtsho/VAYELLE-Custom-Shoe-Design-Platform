@@ -13,8 +13,15 @@ def get_db_client():
     global _client
     if _client is None:
         try:
-            # Set short timeout for local checks so web server responds fast if DB is down
-            _client = MongoClient(Config.MONGO_URI, serverSelectionTimeoutMS=4000)
+            kwargs = {'serverSelectionTimeoutMS': 5000}
+            uri = Config.MONGO_URI
+            if 'mongodb+srv://' in uri or 'ssl=true' in uri.lower() or 'tls=true' in uri.lower():
+                try:
+                    import certifi
+                    kwargs['tlsCAFile'] = certifi.where()
+                except ImportError:
+                    pass
+            _client = MongoClient(uri, **kwargs)
         except Exception as e:
             logger.error(f"Error creating MongoClient: {e}")
             return None

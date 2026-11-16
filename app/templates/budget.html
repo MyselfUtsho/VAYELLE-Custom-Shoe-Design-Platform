@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% block title %}Budget Search — VAYELLE{% endblock %}
+
+{% block content %}
+<div class="section-container" style="padding-top: 32px; padding-bottom: 64px;">
+
+  <!-- Breadcrumb Navigation -->
+  <nav class="breadcrumb-nav" style="display:flex; align-items:center; gap:8px; font-size:0.875rem; color:var(--text-muted); margin-bottom:16px;">
+    <a href="{{ url_for('main.index') }}" style="color:var(--text-muted); text-decoration:none;">Home</a>
+    <span>/</span>
+    <span style="color:var(--text-heading); font-weight:600;">Budget Search</span>
+  </nav>
+
+  <!-- Page Header -->
+  <div class="page-header" style="margin-bottom: 24px;">
+    <p class="eyebrow" style="color:var(--accent); font-weight:700; text-transform:uppercase; letter-spacing:0.08em; font-size:0.75rem; margin-bottom:8px;">
+      Smart Shopping
+    </p>
+    <h1 style="font-size:2.25rem; font-weight:800; color:var(--text-heading); margin-bottom:8px;">
+      Budget-Based Shoe Search
+    </h1>
+    <p style="color:var(--text-muted); font-size:1rem; max-width:650px;">
+      Find the perfect shoes within your budget. Enter a minimum and maximum price range in BDT (৳) to discover matching footwear from our collection.
+    </p>
+  </div>
+
+  <!-- Budget Search Form Card -->
+  <div class="filter-controls-card" style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-xl); padding:24px; margin-bottom:32px; box-shadow:var(--shadow-sm);">
+    
+    <form method="GET" action="{{ url_for('main.budget') }}" id="budget-search-form">
+      <div style="display:flex; flex-wrap:wrap; align-items:flex-end; gap:20px;">
+        
+        <!-- Minimum Price Input -->
+        <div style="flex:1; min-width:200px;">
+          <label class="form-label" for="min_price" style="font-size:0.8125rem; font-weight:700; color:var(--text-heading); text-transform:uppercase; letter-spacing:0.05em;">
+            Minimum Budget (৳)
+          </label>
+          <input 
+            type="number" 
+            id="min_price" 
+            name="min_price" 
+            class="form-input" 
+            placeholder="e.g. 1000" 
+            min="0" 
+            step="any"
+            value="{{ min_price_raw or '' }}"
+            style="margin-top:6px;"
+          >
+        </div>
+
+        <!-- Maximum Price Input -->
+        <div style="flex:1; min-width:200px;">
+          <label class="form-label" for="max_price" style="font-size:0.8125rem; font-weight:700; color:var(--text-heading); text-transform:uppercase; letter-spacing:0.05em;">
+            Maximum Budget (৳)
+          </label>
+          <input 
+            type="number" 
+            id="max_price" 
+            name="max_price" 
+            class="form-input" 
+            placeholder="e.g. 5000" 
+            min="0" 
+            step="any"
+            value="{{ max_price_raw or '' }}"
+            style="margin-top:6px;"
+          >
+        </div>
+
+        <!-- Search Button -->
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <button type="submit" class="btn btn-primary" style="padding:12px 28px; font-size:0.875rem;">
+            🔍 Search Shoes
+          </button>
+          {% if has_search or error_message %}
+            <a href="{{ url_for('main.budget') }}" class="btn btn-outline btn-sm" style="font-size:0.8125rem; padding:10px 16px; color:var(--accent); border-color:var(--accent);">
+              ✕ Clear
+            </a>
+          {% endif %}
+        </div>
+
+      </div>
+
+      <!-- Quick Budget Range Chips -->
+      <div style="margin-top:18px; padding-top:14px; border-top:1px solid var(--border-color); display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+        <span style="font-size:0.8125rem; font-weight:600; color:var(--text-muted);">Quick Ranges:</span>
+        <a href="{{ url_for('main.budget', min_price=0, max_price=2000) }}" 
+           class="chip {% if min_price == 0 and max_price == 2000 %}active{% endif %}" 
+           style="text-decoration:none; font-size:0.75rem; padding:4px 12px;">
+          Under ৳2,000
+        </a>
+        <a href="{{ url_for('main.budget', min_price=2000, max_price=4000) }}" 
+           class="chip {% if min_price == 2000 and max_price == 4000 %}active{% endif %}" 
+           style="text-decoration:none; font-size:0.75rem; padding:4px 12px;">
+          ৳2,000 – ৳4,000
+        </a>
+        <a href="{{ url_for('main.budget', min_price=4000, max_price=6000) }}" 
+           class="chip {% if min_price == 4000 and max_price == 6000 %}active{% endif %}" 
+           style="text-decoration:none; font-size:0.75rem; padding:4px 12px;">
+          ৳4,000 – ৳6,000
+        </a>
+        <a href="{{ url_for('main.budget', min_price=6000, max_price=10000) }}" 
+           class="chip {% if min_price == 6000 and max_price == 10000 %}active{% endif %}" 
+           style="text-decoration:none; font-size:0.75rem; padding:4px 12px;">
+          ৳6,000 – ৳10,000
+        </a>
+        <a href="{{ url_for('main.budget', min_price=10000) }}" 
+           class="chip {% if min_price == 10000 and max_price is none %}active{% endif %}" 
+           style="text-decoration:none; font-size:0.75rem; padding:4px 12px;">
+          ৳10,000+
+        </a>
+      </div>
+    </form>
+
+  </div>
+
+  <!-- Error Message Display -->
+  {% if error_message %}
+    <div style="background:#fee2e2; border:1px solid #fecaca; border-radius:var(--radius-lg); padding:16px 20px; margin-bottom:24px; display:flex; align-items:center; gap:10px;">
+      <span style="font-size:1.25rem;">⚠️</span>
+      <p style="color:#991b1b; font-size:0.875rem; font-weight:500; margin:0;">{{ error_message }}</p>
+    </div>
+  {% endif %}
+
+  <!-- Search Results Section -->
+  {% if has_search and not error_message %}
+
+    <!-- Results Summary Banner -->
+    <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-lg); padding:16px 20px; margin-bottom:24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+      <div style="font-size:0.9rem; color:var(--text-body);">
+        Found <strong style="color:var(--text-heading);">{{ total_count }}</strong> shoe{% if total_count != 1 %}s{% endif %} 
+        {% if min_price is not none and max_price is not none %}
+          between <strong style="color:var(--accent);">{{ bdt(min_price) }}</strong> and <strong style="color:var(--accent);">{{ bdt(max_price) }}</strong>
+        {% elif min_price is not none %}
+          starting from <strong style="color:var(--accent);">{{ bdt(min_price) }}</strong>
+        {% elif max_price is not none %}
+          up to <strong style="color:var(--accent);">{{ bdt(max_price) }}</strong>
+        {% endif %}
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        {% if min_price is not none %}
+          <span class="badge badge-accent" style="font-size:0.75rem; padding:4px 10px;">
+            Min: <strong>{{ bdt(min_price) }}</strong>
+          </span>
+        {% endif %}
+        {% if max_price is not none %}
+          <span class="badge badge-accent" style="font-size:0.75rem; padding:4px 10px;">
+            Max: <strong>{{ bdt(max_price) }}</strong>
+          </span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Product Grid (Matching Shoes) -->
+    {% if shoes and shoes|length > 0 %}
+      <div class="product-grid-3">
+        {% for shoe in shoes %}
+          <div class="product-card" style="cursor:default;">
+            
+            <!-- Cloudinary / Static Image Delivery with Fallback -->
+            <img 
+              src="{{ shoe.image_url or '/static/images/shoe-black-runner.jpg' }}" 
+              alt="{{ shoe.shoe_name }}" 
+              class="product-card-image"
+              onerror="this.src='/static/images/shoe-black-runner.jpg'"
+              loading="lazy"
+            >
+            
+            <!-- Category Badge -->
+            <span class="product-card-badge">{{ shoe.category }}</span>
+
+            <!-- Product Details -->
+            <div class="product-card-body">
+              <div class="product-card-name">{{ shoe.shoe_name }}</div>
+              <div class="product-card-desc">
+                {{ shoe.description or 'Handcrafted footwear silhouette designed for personalized customization.' }}
+              </div>
+              
+              <div class="product-card-footer">
+                <span class="badge badge-default">{{ shoe.gender }}</span>
+                <div class="product-card-price">{{ bdt(shoe.base_price) }}</div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+    {% else %}
+      <!-- Empty State: No Shoes Found in Budget Range -->
+      <div class="empty-state" style="text-align:center; padding:72px 24px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-2xl);">
+        <div style="font-size:3.5rem; margin-bottom:16px;">💰</div>
+        <h3 style="font-size:1.5rem; font-weight:700; color:var(--text-heading); margin-bottom:8px;">
+          No Shoes Found in This Budget
+        </h3>
+        <p style="color:var(--text-muted); font-size:0.95rem; max-width:480px; margin:0 auto 24px;">
+          We couldn't find any shoes 
+          {% if min_price is not none and max_price is not none %}
+            priced between <strong>{{ bdt(min_price) }}</strong> and <strong>{{ bdt(max_price) }}</strong>.
+          {% elif min_price is not none %}
+            starting from <strong>{{ bdt(min_price) }}</strong>.
+          {% elif max_price is not none %}
+            up to <strong>{{ bdt(max_price) }}</strong>.
+          {% endif %}
+          Try adjusting your budget range or browse the full catalog.
+        </p>
+        <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+          <a href="{{ url_for('main.budget') }}" class="btn btn-primary">
+            Try Different Budget
+          </a>
+          <a href="{{ url_for('main.explore') }}" class="btn btn-outline">
+            Browse All Shoes
+          </a>
+        </div>
+      </div>
+    {% endif %}
+
+  {% elif not has_search and not error_message %}
+    <!-- Initial State: No Search Performed Yet -->
+    <div class="empty-state" style="text-align:center; padding:72px 24px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-2xl);">
+      <div style="font-size:3.5rem; margin-bottom:16px;">🔍</div>
+      <h3 style="font-size:1.5rem; font-weight:700; color:var(--text-heading); margin-bottom:8px;">
+        Set Your Budget Range
+      </h3>
+      <p style="color:var(--text-muted); font-size:0.95rem; max-width:480px; margin:0 auto 16px;">
+        Enter a minimum and/or maximum price above to search for shoes within your budget. 
+        You can also use the quick range chips for common price brackets.
+      </p>
+      <p style="color:var(--text-muted); font-size:0.8125rem; max-width:400px; margin:0 auto;">
+        All prices are in BDT (৳). Results are sorted by price from lowest to highest.
+      </p>
+    </div>
+  {% endif %}
+
+</div>
+
+<!-- Student-Friendly Vanilla JavaScript for Budget Search UI -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var minInput = document.getElementById('min_price');
+    var maxInput = document.getElementById('max_price');
+
+    // Log search state for debugging
+    var hasSearch = {{ 'true' if has_search else 'false' }};
+    if (hasSearch) {
+      console.log("VAYELLE Budget Search — Min: " + (minInput.value || "Any") + ", Max: " + (maxInput.value || "Any"));
+    } else {
+      console.log("VAYELLE Budget Search — Awaiting user input");
+    }
+
+    // Client-side form validation before submission
+    var form = document.getElementById('budget-search-form');
+    form.addEventListener('submit', function(e) {
+      var minVal = minInput.value.trim();
+      var maxVal = maxInput.value.trim();
+
+      // At least one field should be filled
+      if (!minVal && !maxVal) {
+        e.preventDefault();
+        alert('Please enter at least a minimum or maximum budget to search.');
+        return;
+      }
+
+      // Validate min <= max when both are provided
+      if (minVal && maxVal) {
+        var minNum = parseFloat(minVal);
+        var maxNum = parseFloat(maxVal);
+        if (minNum > maxNum) {
+          e.preventDefault();
+          alert('Minimum budget cannot be greater than maximum budget.');
+          return;
+        }
+      }
+    });
+  });
+</script>
+{% endblock %}

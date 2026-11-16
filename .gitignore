@@ -35,7 +35,14 @@ htmlcov/
 .DS_Store
 Thumbs.db
 
+# User uploaded media
+app/static/uploads/
+static/uploads/
+
 # Lovable unfinished folders (Strictly excluded)
 lovable/
 lovable*/
 *lovable*
+make/
+make/*
+*lovable unfinished folders*
